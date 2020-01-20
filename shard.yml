@@ -1,0 +1,13 @@
+name: hardwire
+version: 0.1.0
+
+targets:
+  hardwire:
+    main: src/hardwire.cr
+
+authors:
+  - Jerome Twell <jtwell1@gmail.com>
+
+crystal: 0.32.1
+
+license: MIT
