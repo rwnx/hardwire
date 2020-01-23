@@ -112,6 +112,11 @@ module HardWire
           end
         end
 
+        \{% if lifecycle == :singleton %}
+          # class var declaration for singleton
+          @@\{{safetype.id}}\{%for tag in regtags %}_\{{tag.id}}\{% end %} : \{{selftype.id}}?
+        \{% end %}
+
         # Resolve an instance of a class
         def self.resolve( type : \{{selftype.class}},  \{% for tag in regtags %} \{{tag.downcase.id}} : Tags::\{{safetype.id}}::\{{tag.upcase.id}}.class, \{% end %} ) : \{{selftype.id}}
           # Singletons: memoize to class var
@@ -121,7 +126,7 @@ module HardWire
 
           \{% if block %}
             # block passed - use custom init with resolve, etc
-            (\{{block.body}})
+            (\{{block.body}}) 
           \{% else %}
             # No block - introspection time.
             \{{selftype.id}}.new(
