@@ -98,11 +98,13 @@ module HardWire
             )
         end
 
+        \{% safetype = selftype.stringify.gsub(/::/, "__") %}
+
         # The Tags module contains all registered tags as classes.
         #
         # These generated tags allow us to resolve constructors using static type information.
         module Tags
-          module \{{selftype.id}}
+          module \{{safetype.id}}
             \{% for tag in regtags %}
               class \{{tag.upcase.id}}
               end
@@ -111,10 +113,10 @@ module HardWire
         end
 
         # Resolve an instance of a class
-        def self.resolve( type : \{{selftype.class}},  \{% for tag in regtags %} \{{tag.downcase.id}} : Tags::\{{selftype.id}}::\{{tag.upcase.id}}.class, \{% end %} ) : \{{selftype.id}}
+        def self.resolve( type : \{{selftype.class}},  \{% for tag in regtags %} \{{tag.downcase.id}} : Tags::\{{safetype.id}}::\{{tag.upcase.id}}.class, \{% end %} ) : \{{selftype.id}}
           # Singletons: memoize to class var
           \{% if lifecycle == :singleton %}
-            @@\{{selftype.id}}\{%for tag in regtags %}_\{{tag.id}}\{% end %} ||=
+            @@\{{safetype.id}}\{%for tag in regtags %}_\{{tag.id}}\{% end %} ||=
           \{% end %}
 
           \{% if block %}
@@ -149,7 +151,7 @@ module HardWire
                     \{% end %}
 
                     \{% for tag in argtags.sort %}
-                      \{{tag}}: Tags::\{{arg.restriction.id}}::\{{tag.upcase.id}},
+                      \{{tag}}: Tags::\{{arg.restriction.stringify.gsub(/::/, "__").id}}::\{{tag.upcase.id}},
                     \{% end %}
                   \{% end %}
                 ),

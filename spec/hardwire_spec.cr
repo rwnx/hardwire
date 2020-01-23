@@ -3,6 +3,8 @@ require "./spec_helper"
 class Service1; end
 class Service2; end
 
+class Deep::Nested::Item; end
+
 class CheekyService
   @@instances = 0
 
@@ -48,6 +50,8 @@ module BasicContainer
   transient CheekyService
   singleton Application
 
+  singleton Deep::Nested::Item
+
   # no tags, just block
   transient(Service1) {
     Service1.new
@@ -86,9 +90,8 @@ describe HardWire do
     end
 
     describe "#resolve" do
-      it "should contain all the registered dependencies" do
-        BasicContainer.registrations.size.should eq 6
-        SecondContainer.registrations.size.should eq 1
+      it "should resolve a deeply nested dependency" do
+        BasicContainer.resolve(Deep::Nested::Item)
       end
 
       it "should resolve block registrations correctly" do
