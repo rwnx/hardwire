@@ -6,11 +6,11 @@ A Compile-time Dependency Injection system for Crystal.
 
 1. Add the dependency to your `shard.yml`:
 
-   ```yaml
-   dependencies:
-     hardwire:
-       github: jerometwell/hardwire
-   ```
+```yaml
+dependencies:
+  hardwire:
+    github: jerometwell/hardwire
+```
 
 2. Run `shards install`
 

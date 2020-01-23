@@ -1,41 +1,80 @@
-# TODO: Write documentation for `HardWire`
-
+# A Compile-time dependency injection system for Crystal.
+#
+# See `Root` for documentation on the container api.
 module HardWire
   VERSION = "0.1.0"
 
-  # provides a symbol: String mapping of argument names(dependencies) to tags in a string-csv format
-  # e.g.   @[HardWire::Tags(db_service: "secondary,primary")]
-  # tags are in AND-logic, so services need ALL tags to resolve.
+  # Attach this annotation to a #initialize function to indicate which tags this method needs to resolve
+  # for each dependency.
+  # ```
+  # @[HardWire::Tags(db_service: "secondary,primary")]
+  # def initialize(db_service : DbService)
+  # ```
+  # Use keys that match the arguments you're trying to inject, and csv-strings for tags
   annotation Tags
   end
 
-  # indicates a single constuctor to be used as the injection interface,
-  # When there are many constructors to choose from
-  # This is not required when there is only one constructor
+  # Attach this annotation to a #initialize function in a multi-constructor class 
+  # to indicate that it is to be used for dependency injection.
+  # ```
+  # def initialize
+  #   # wont be used
+  # end
+  #
+  # @[HardWire::Inject]
+  # def initialize
+  #   # will be used
+  # end
+  # ```
   annotation Inject
   end
 
+  # An Exception for indicating a duplicate registration at runtime.
   class AlreadyRegisteredException < Exception
-    def initialize(@path : Symbol, @lifecycle : Symbol, @tags = [] of Symbol)
+    def initialize(@path : String, @lifecycle : Symbol, @tags = [] of Symbol)
       super("Failed to register new #{@lifecycle}, #{@path}#{@tags} Already registered")
     end
   end
 
+  # A module mixin for creating a hardwire container.
+  #
+  # Contains a set of class-level methods and macros for registering and interrogating the container.
+  # As all the functionality is contained in macros, see `Root` to an implementation example.
+  # ```
+  # module WhateverYouLikeContainer
+  #   include Hardwire::Container
+  # end
+  # ```
   module Container
     macro included
-      # Store all registered deps, which are used to give nice errors for duplicate registrations
       @@registrations = [] of String
+      # Store all registrations, which are mainly used to give nice errors for duplicate registrations
+      # 
+      # Users can also run their own checks at runtime for length, structure, etc.
       class_getter registrations
 
-      def self.registered?(type : Class, tags : String)
+      def self.registered?(type : Class, tags : String) : Bool
         tagstring = "_" + tags.strip.split(",").map(&.strip).map(&.downcase).sort.join("_") 
         return @@registrations.any? { |e| e == type.name + tagstring}
       end
 
-      def self.registered?(type : Class)
+      def self.registered?(type : Class) : Bool
         return @@registrations.any? { |e| e == type.name }
       end
 
+      # Create a new registration from the passed type, lifecycle, and tags
+      #
+      # Registration is essentially making a constructor method (`self.resolve`) for the dependency, 
+      # that lives on the container.
+      #
+      # resolves are differentiated by signature, rather than any other dynamic feature, so incoming calls
+      # route to the correct method without any dynamic-ness.
+      #
+      # There are also some checks that get carried out in the registration to catch errors up front
+      # * We keep a class var, `@@registrations`, which contains a stringified version of this dependency.
+      #   This is used for making sure things have been registered/not registered twice. You can get this using the self.dependencies method
+      # * Tags are converted into classes, so that they can be passed around at compile time. 
+      #   This means you'll get missing const errors when you fail to register properly, but it should be clear why.
       macro register(path, lifecycle = :singleton, tags = nil, &block )
         # Normalize regtags to array of tags (string)
         \{% if tags != nil %}
@@ -50,7 +89,7 @@ module HardWire
         \{% end %}
 
         if @@registrations.includes? "\{{selftype.id}}\{%for tag in regtags %}_\{{tag.id}}\{% end %}"
-          raise ::HardWire::AlreadyRegisteredException.new( path: :\{{selftype.id}},
+          raise ::HardWire::AlreadyRegisteredException.new( path: "\{{selftype.id}}",
             lifecycle: \{{lifecycle}},
             \{% if regtags.size > 0 %}
               tags:
@@ -59,7 +98,9 @@ module HardWire
             )
         end
 
-        # For use in type signatures, define a new type for this dependencies tags
+        # The Tags module contains all registered tags as classes.
+        #
+        # These generated tags allow us to resolve constructors using static type information.
         module Tags
           module \{{selftype.id}}
             \{% for tag in regtags %}
@@ -69,7 +110,7 @@ module HardWire
           end
         end
 
-        # Resolve is overloaded with each registed class + tags combo
+        # Resolve an instance of a class
         def self.resolve( type : \{{selftype.class}},  \{% for tag in regtags %} \{{tag.downcase.id}} : Tags::\{{selftype.id}}::\{{tag.upcase.id}}.class, \{% end %} ) : \{{selftype.id}}
           # Singletons: memoize to class var
           \{% if lifecycle == :singleton %}
@@ -121,7 +162,7 @@ module HardWire
         @@registrations.push "\{{selftype.id}}\{%for tag in regtags %}_\{{tag.id}}\{% end %}"
       end
 
-      # convenience methods for lifecycles
+      # Register a transient dependency.
       macro transient(path, tags = nil, &block)
         \{% if block %}
           register \{{path}}, :transient, \{{tags}} \{{block}}
@@ -130,6 +171,7 @@ module HardWire
         \{% end %}
       end
 
+      # Register a singleton dependency.
       macro singleton(path, tags = nil, &block)
         \{% if block %}
           register \{{path}}, :singleton, \{{tags}} \{{block}}
@@ -138,13 +180,24 @@ module HardWire
         \{% end %}
       end
 
+      # Register a transient dependency.
       macro transient(path, &block)
           transient(\{{path}}) \{{block}}
       end
 
+      # Register a singleton dependency.
       macro singleton(path, &block)
           singleton(\{{path}}) \{{block}}
       end
     end
+  end
+
+  # A "Global" namespaced Container.
+  #
+  # Consumers of the library can use this without creating their own. 
+  #
+  # We can also use it as an example of our macros, for documentation purposes.
+  module Root
+    include Container
   end
 end
