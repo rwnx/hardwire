@@ -14,7 +14,7 @@ module HardWire
   annotation Tags
   end
 
-  # Attach this annotation to a #initialize function in a multi-constructor class 
+  # Attach this annotation to a #initialize function in a multi-constructor class
   # to indicate that it is to be used for dependency injection.
   # ```
   # def initialize
@@ -47,33 +47,29 @@ module HardWire
   # ```
   module Container
     macro included
-      @@registrations = [] of String
       # Store all registrations, which are mainly used to give nice errors for duplicate registrations
-      # 
+      #
       # Users can also run their own checks at runtime for length, structure, etc.
-      class_getter registrations
+      REGISTRATIONS = [] of String
 
-      def self.registered?(type : Class, tags : String) : Bool
-        tagstring = "_" + tags.strip.split(",").map(&.strip).map(&.downcase).sort.join("_") 
-        return @@registrations.any? { |e| e == type.name + tagstring}
+      def self.registered?(target : Class, tags : String = "") : Bool
+        tagstring = "_" + tags.strip.split(",").map(&.strip).map(&.downcase).sort.join("_")
+        return REGISTRATIONS.includes? target.name + tagstring
       end
 
-      def self.registered?(type : Class) : Bool
-        return @@registrations.any? { |e| e == type.name }
-      end
 
       # Create a new registration from the passed type, lifecycle, and tags
       #
-      # Registration is essentially making a constructor method (`self.resolve`) for the dependency, 
+      # Registration is essentially making a constructor method (`self.resolve`) for the dependency,
       # that lives on the container.
       #
       # resolves are differentiated by signature, rather than any other dynamic feature, so incoming calls
       # route to the correct method without any dynamic-ness.
       #
       # There are also some checks that get carried out in the registration to catch errors up front
-      # * We keep a class var, `@@registrations`, which contains a stringified version of this dependency.
-      #   This is used for making sure things have been registered/not registered twice. You can get this using the self.dependencies method
-      # * Tags are converted into classes, so that they can be passed around at compile time. 
+      # * We keep a class const, `REGISTRATIONS`, which contains a stringified version of this dependency.
+      #   This is used for making sure things have been registered/not registered twice.
+      # * Tags are converted into classes, so that they can be passed around at compile time.
       #   This means you'll get missing const errors when you fail to register properly, but it should be clear why.
       macro register(path, lifecycle = :singleton, tags = nil, &block )
         # Normalize regtags to array of tags (string)
@@ -88,15 +84,10 @@ module HardWire
           \{% raise "Unknown Lifecycle #{lifecycle}" %}
         \{% end %}
 
-        if @@registrations.includes? "\{{selftype.id}}\{%for tag in regtags %}_\{{tag.id}}\{% end %}"
-          raise ::HardWire::AlreadyRegisteredException.new( path: "\{{selftype.id}}",
-            lifecycle: \{{lifecycle}},
-            \{% if regtags.size > 0 %}
-              tags:
-                [\{% for tag in regtags %} :\{{tag.id}},\{% end %}]
-              \{% end %}
-            )
-        end
+        \{% if REGISTRATIONS.includes? "#{selftype.id}_#{regtags.join("_").id}" %}
+          \{% raise "HardWire/Duplicate Registration: existing (#{selftype.id}, #{regtags})." %}
+        \{% end %}
+
 
         \{% safetype = selftype.stringify.gsub(/::/, "__") %}
 
@@ -118,7 +109,7 @@ module HardWire
         \{% end %}
 
         # Resolve an instance of a class
-        def self.resolve( type : \{{selftype.class}},  \{% for tag in regtags %} \{{tag.downcase.id}} : Tags::\{{safetype.id}}::\{{tag.upcase.id}}.class, \{% end %} ) : \{{selftype.id}}
+        def self.resolve( type : \{{selftype.class}},  \{% for tag in regtags %} \{{tag.id}} : Tags::\{{safetype.id}}::\{{tag.upcase.id}}.class, \{% end %} ) : \{{selftype.id}}
           # Singletons: memoize to class var
           \{% if lifecycle == :singleton %}
             @@\{{safetype.id}}\{%for tag in regtags %}_\{{tag.id}}\{% end %} ||=
@@ -126,7 +117,7 @@ module HardWire
 
           \{% if block %}
             # block passed - use custom init with resolve, etc
-            (\{{block.body}}) 
+            (\{{block.body}})
           \{% else %}
             # No block - introspection time.
             \{{selftype.id}}.new(
@@ -134,7 +125,8 @@ module HardWire
             # If multiple constructors are found, we want the annotated one
             \{% if inits.size > 1 %}
               \{% annotated = inits.select { |m| m.annotation(::HardWire::Inject) } %}
-              \{% raise "Too many annotated constructors for #{path}" if annotated.size > 1 %}
+              \{% raise "HardWire/Too Many Constructors: target: #{path}. Only one constuctor can be annotated with @[HardWire::Inject]." if annotated.size > 1 %}
+              \{% raise "HardWire/Unknown Constructor: target: #{path}. Annotate your injectable constuctor with @[HardWire::Inject]" if annotated.size < 1 %}
               \{% constructor = annotated.first %}
             \{% else %}
               \{% constructor = inits.first %}
@@ -142,6 +134,7 @@ module HardWire
 
             \{% if constructor != nil %}
               \{% for arg in constructor.args %}
+
                 \{{arg.name.id}}: self.resolve(
                   type: \{{arg.restriction}},
 
@@ -155,9 +148,14 @@ module HardWire
                       \{% end %}
                     \{% end %}
 
-                    \{% for tag in argtags.sort %}
+                    \{% argtags = argtags.sort %}
+                    \{% for tag in argtags %}
                       \{{tag}}: Tags::\{{arg.restriction.stringify.gsub(/::/, "__").id}}::\{{tag.upcase.id}},
                     \{% end %}
+                  \{% end %}
+
+                  \{% if !REGISTRATIONS.includes? "#{arg.restriction.id}_#{argtags.join("_").id}" %}
+                    \{% raise "HardWire/Missing Dependency: unabled to register (#{selftype.id}, #{regtags}), missing #{arg.name}: (#{arg.restriction}, #{argtags})" %}
                   \{% end %}
                 ),
               \{% end %}
@@ -166,7 +164,7 @@ module HardWire
           \{% end %}
         end
 
-        @@registrations.push "\{{selftype.id}}\{%for tag in regtags %}_\{{tag.id}}\{% end %}"
+        \{% REGISTRATIONS << "#{selftype.id}_#{regtags.join("_").id}" %}
       end
 
       # Register a transient dependency.
@@ -201,7 +199,7 @@ module HardWire
 
   # A "Global" namespaced Container.
   #
-  # Consumers of the library can use this without creating their own. 
+  # Consumers of the library can use this without creating their own.
   #
   # We can also use it as an example of our macros, for documentation purposes.
   module Root

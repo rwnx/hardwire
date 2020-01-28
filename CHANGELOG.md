@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
   -------------------------------------------------------------------
 ## [Unreleased]
+ - Added more compile-time checks to raise descriptive errors on register. This also fixes a bug where circular dependencies could be registered.
 
 ## [0.2.0] 2020-01-23
  - Fixed an issue where nested `Module::Classes` could not be registered.
