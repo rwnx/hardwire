@@ -72,11 +72,11 @@ module HardWire
       # * Tags are converted into classes, so that they can be passed around at compile time.
       #   This means you'll get missing const errors when you fail to register properly, but it should be clear why.
       macro register(path, lifecycle = :singleton, tags = nil, &block )
-        # Normalize regtags to array of tags (string)
+        # Normalize register_tags to array of tags (string)
         \{% if tags != nil %}
-          \{% regtags = tags.strip.split(",").map(&.strip).map(&.downcase).sort %}
+          \{% register_tags = tags.strip.split(",").map(&.strip).map(&.downcase).sort %}
         \{% else %}
-          \{% regtags = [] of String %}
+          \{% register_tags = [] of String %}
         \{% end %}
 
         \{% selftype = path.resolve %}
@@ -84,19 +84,19 @@ module HardWire
           \{% raise "Unknown Lifecycle #{lifecycle}" %}
         \{% end %}
 
-        \{% if REGISTRATIONS.includes? "#{selftype.id}_#{regtags.join("_").id}" %}
-          \{% raise "HardWire/Duplicate Registration: existing (#{selftype.id}, #{regtags})." %}
+        \{% if REGISTRATIONS.includes? "#{selftype.id}_#{register_tags.join("_").id}" %}
+          \{% raise "HardWire/Duplicate Registration: existing (#{selftype.id}, #{register_tags})." %}
         \{% end %}
 
 
-        \{% safetype = selftype.stringify.gsub(/::/, "__") %}
+        \{% safetype = selftype.stringify.gsub(/[^\w]/, "_") %}
 
         # The Tags module contains all registered tags as classes.
         #
         # These generated tags allow us to resolve constructors using static type information.
         module Tags
           module \{{safetype.id}}
-            \{% for tag in regtags %}
+            \{% for tag in register_tags %}
               class \{{tag.upcase.id}}
               end
             \{% end %}
@@ -105,14 +105,14 @@ module HardWire
 
         \{% if lifecycle == :singleton %}
           # class var declaration for singleton
-          @@\{{safetype.id}}\{%for tag in regtags %}_\{{tag.id}}\{% end %} : \{{selftype.id}}?
+          @@\{{safetype.id}}\{%for tag in register_tags %}_\{{tag.id}}\{% end %} : \{{selftype.id}}?
         \{% end %}
 
         # Resolve an instance of a class
-        def self.resolve( type : \{{selftype.class}},  \{% for tag in regtags %} \{{tag.id}} : Tags::\{{safetype.id}}::\{{tag.upcase.id}}.class, \{% end %} ) : \{{selftype.id}}
+        def self.resolve( type : \{{selftype.class}},  \{% for tag in register_tags %} \{{tag.id}} : Tags::\{{safetype.id}}::\{{tag.upcase.id}}.class, \{% end %} ) : \{{selftype.id}}
           # Singletons: memoize to class var
           \{% if lifecycle == :singleton %}
-            @@\{{safetype.id}}\{%for tag in regtags %}_\{{tag.id}}\{% end %} ||=
+            @@\{{safetype.id}}\{%for tag in register_tags %}_\{{tag.id}}\{% end %} ||=
           \{% end %}
 
           \{% if block %}
@@ -150,12 +150,12 @@ module HardWire
 
                     \{% argtags = argtags.sort %}
                     \{% for tag in argtags %}
-                      \{{tag}}: Tags::\{{arg.restriction.stringify.gsub(/::/, "__").id}}::\{{tag.upcase.id}},
+                      \{{tag}}: Tags::\{{arg.restriction.stringify.gsub(/[^\w]/, "_").id}}::\{{tag.upcase.id}},
                     \{% end %}
                   \{% end %}
 
                   \{% if !REGISTRATIONS.includes? "#{arg.restriction.id}_#{argtags.join("_").id}" %}
-                    \{% raise "HardWire/Missing Dependency: unabled to register (#{selftype.id}, #{regtags}), missing #{arg.name}: (#{arg.restriction}, #{argtags})" %}
+                    \{% raise "HardWire/Missing Dependency: unabled to register (#{selftype.id}, #{register_tags}), missing #{arg.name}: (#{arg.restriction}, #{argtags})" %}
                   \{% end %}
                 ),
               \{% end %}
@@ -164,7 +164,7 @@ module HardWire
           \{% end %}
         end
 
-        \{% REGISTRATIONS << "#{selftype.id}_#{regtags.join("_").id}" %}
+        \{% REGISTRATIONS << "#{selftype.id}_#{register_tags.join("_").id}" %}
       end
 
       # Register a transient dependency.
