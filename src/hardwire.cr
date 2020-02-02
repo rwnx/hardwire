@@ -2,7 +2,7 @@
 #
 # See `Root` for documentation on the container api.
 module HardWire
-  VERSION = "0.2.0"
+  VERSION = "0.3.0"
 
   # Attach this annotation to a #initialize function to indicate which tags this method needs to resolve
   # for each dependency.
