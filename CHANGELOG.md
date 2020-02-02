@@ -17,6 +17,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   -------------------------------------------------------------------
 ## [Unreleased]
 
+## [0.3.1] 2020-02-02
+ - Fix a versioning metadata issue. Code is unchanged.
+
 ## [0.3.0] 2020-02-02
  - Added more compile-time checks to raise descriptive errors on register. 
  - Fixed a bug where circular dependencies could be registered. Registrations now need to happen in the correct order. 
