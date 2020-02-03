@@ -92,23 +92,27 @@ describe HardWire do
 
     describe "#resolve" do
       it "should resolve a deeply nested dependency" do
-        BasicContainer.resolve Deep::Nested::Item, BasicContainer::Tags::Deep__Nested__Item::DEFAULT
+        BasicContainer.resolve Deep::Nested::Item
+      end
+
+      it "should resolve a tagged dependency" do
+        BasicContainer.resolve CheekyService, "primary"
       end
 
       it "should resolve block registrations correctly" do
-        app = BasicContainer.resolve Application, BasicContainer::Tags::Application::DEFAULT
+        app = BasicContainer.resolve Application
         app.blockvalue.should eq "blockvalue"
       end
 
       it "should memoize singletons" do
-        app = BasicContainer.resolve Application, BasicContainer::Tags::Application::DEFAULT
+        app = BasicContainer.resolve Application
 
         app.singleton1.should eq app.singleton2
       end
 
       it "should NOT memoize transients" do
-        transient1 = BasicContainer.resolve CheekyService, BasicContainer::Tags::CheekyService::DEFAULT
-        transient2 = BasicContainer.resolve CheekyService, BasicContainer::Tags::CheekyService::DEFAULT
+        transient1 = BasicContainer.resolve CheekyService
+        transient2 = BasicContainer.resolve CheekyService
 
         transient1.should_not eq transient2
       end

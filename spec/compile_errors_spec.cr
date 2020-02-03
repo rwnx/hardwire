@@ -30,4 +30,12 @@ describe "HardWire" do
   it "should fail to compile when a dependency has multiple annotated constructors" do
     assert_compile_error "compile_errors/constructor_duplicate.cr", "Error: HardWire/Too Many Constructors: target: SpecialService."
   end
+
+  it "should fail to compile when a dependency has commas in the tag" do
+    assert_compile_error "compile_errors/invalid_tag_characters.cr", "Error: Hardwire/Invalid Tag Characters."
+  end
+
+  it "should fail to compile when a dependency is registered with the reserved `default` tag" do
+    assert_compile_error "compile_errors/reserved_tag_default.cr", "Error: Hardwire/Reserved Tag: `default`."
+  end
 end

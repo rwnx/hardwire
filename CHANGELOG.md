@@ -18,6 +18,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
  - Removed Complex tags - This will be revisited at a future date. All documentation has been reverted to a string-based system.
     In future, this may be used for multiple registrations/optional resolution. As the current feature wasn't proving this, it's been removed.
+ - Added some additional compile checks for invalid tag strings.
+ - Fixed some typos in compile errors.
+ - Added a new macro for resolving depedencies by their tagstring, rather than the tag classes. This means that humans can use them, instead!
 
 ## [0.3.1] 2020-02-02
  - Fix a versioning metadata issue. Code is unchanged.
