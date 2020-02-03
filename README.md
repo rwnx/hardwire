@@ -25,7 +25,7 @@ Since the resolution is compile-time (Using Macros), normally this will be a mod
 
 ### Creating a container 📦
 ```crystal
-# To create a new container, include HardWire::Container
+# To create a new container, include `HardWire::Container`
 # This will add the macros you need to register and resolve wiring
 module Container
   include HardWire::Container
@@ -102,16 +102,18 @@ end
 ```
 
 ### Resolving Manually 🔨
-You can resolve dependencies manually using the `#resolve` macro. This allows you to resolve dependencies manually with the tag string.
+You can resolve dependencies manually using the `.resolve` macro. This allows you to resolve dependencies manually with the tag string.
 
 ```crystal
 module Container
   include HardWire::Container
 
-  transient Dependency, "tagged"
+  transient SecretService, "primary"
+  singleton DatabaseThing
 end
 
-Container.resolve, "tagged"
+service = Container.resolve SecretService, "primary"
+db = Container.resolve DatabaseThing
 ```
 
 ### Runtime Interrogation 👀

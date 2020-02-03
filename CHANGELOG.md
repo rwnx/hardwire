@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
   -------------------------------------------------------------------
 ## [Unreleased]
- - Removed Complex tags - This will be revisited at a future date. All documentation has been reverted to a string-based system.
+ - Removed Complex tags - This will be revisited at a future date. All documentation has been reverted to a single string-based system.
     In future, this may be used for multiple registrations/optional resolution. As the current feature wasn't proving this, it's been removed.
  - Added some additional compile checks for invalid tag strings.
  - Fixed some typos in compile errors.
