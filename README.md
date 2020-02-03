@@ -20,12 +20,12 @@ dependencies:
 require "hardwire"
 ```
 
-Hardwire is designed to operate inside a container object. 
+Hardwire is designed to operate inside a container object.
 Since the resolution is compile-time (Using Macros), normally this will be a module.
 
 ### Creating a container 📦
 ```crystal
-# To create a new container, include HardWire::Container
+# To create a new container, include `HardWire::Container`
 # This will add the macros you need to register and resolve wiring
 module Container
   include HardWire::Container
@@ -73,8 +73,9 @@ end
 ```
 
 ### Tags 🏷
-To differentiate between registrations of _the same type_, use the HardWire::Tags annotation. 
-Tags allow you to attach additional metadata to the signature. Tags themselves are string-based, delimited with commas, and _all_ tags must match for injection.
+To differentiate between registrations of _the same type_, use the HardWire::Tags annotation.
+Tags allow you to attach additional metadata to the signature. Tags themselves are string-based, simple identifiers (/\w+/) that allow you to resolve
+a different registration of the same class.
 
 
 ```crystal
@@ -85,19 +86,38 @@ transient String, "secret" {
   "a secret string"
 }
 
-# registering a singleton with many tags
-singleton DbService, "primary,magic,amazing"
+# registering a singleton
+# When no tags are set, it is considered the "default" registration
+singleton DbService
+
+# registering a different singleton with a tag
+singleton DbService, "primary"
 
 # Resolving Dependencies
 class Resolving
-  @[Hardwire::Tags(input: "secret", db: "primary,magic,amazing")]
-  def initialize(input : String, db : DbService)
+  @[Hardwire::Tags(input: "secret", primary_db: "primary")]
+  def initialize(input : String, primary_db : DbService, default_db : DbService)
   end
 end
 ```
 
+### Resolving Manually 🔨
+You can resolve dependencies manually using the `.resolve` macro. This allows you to resolve dependencies manually with the tag string.
+
+```crystal
+module Container
+  include HardWire::Container
+
+  transient SecretService, "primary"
+  singleton DatabaseThing
+end
+
+service = Container.resolve SecretService, "primary"
+db = Container.resolve DatabaseThing
+```
+
 ### Runtime Interrogation 👀
-Hardwire can tell you information about the registrations at runtime, but the dependencies are _HardWired_(See what I did there?), so they can't be changed. 
+Hardwire can tell you information about the registrations at runtime, but the dependencies are _HardWired_ (See what I did there?), so they can't be changed.
 
 ```crystal
 module Container
