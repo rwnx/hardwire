@@ -23,7 +23,7 @@ class Application
   property transient
   property blockvalue
 
-  @[HardWire::Tags(singleton1: "secondary,primary", singleton2: "secondary,primary", blockvalue: "teststring")]
+  @[HardWire::Tags(singleton1: "primary", singleton2: "primary", blockvalue: "teststring")]
   @[HardWire::Inject]
   def initialize(@singleton1 : CheekyService, @singleton2 : CheekyService, @blockvalue : String, @transient : CheekyService)
   end
@@ -46,7 +46,8 @@ module BasicContainer
   singleton String, "teststring" {
     "blockvalue"
   }
-  singleton CheekyService, "secondary,primary"
+  singleton CheekyService, "primary"
+  transient CheekyService, "secondary"
   transient CheekyService
   singleton Application
 
@@ -73,7 +74,7 @@ describe HardWire do
   describe HardWire::Container do
     describe "#registered?" do
       it "should return true for a registered service with tags" do
-        BasicContainer.registered?(CheekyService, "secondary,primary").should be_true
+        BasicContainer.registered?(CheekyService, "secondary").should be_true
       end
 
       it "should return true for a registered service" do
@@ -85,13 +86,17 @@ describe HardWire do
       end
 
       it "should return false for a service registered with different tags" do
-        BasicContainer.registered?(CheekyService, "not,actual,tags").should be_false
+        BasicContainer.registered?(CheekyService, "notactualtag").should be_false
       end
     end
 
     describe "#resolve" do
       it "should resolve a deeply nested dependency" do
-        BasicContainer.resolve(Deep::Nested::Item)
+        BasicContainer.resolve Deep::Nested::Item
+      end
+
+      it "should resolve a tagged dependency" do
+        BasicContainer.resolve CheekyService, "primary"
       end
 
       it "should resolve block registrations correctly" do
