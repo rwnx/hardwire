@@ -16,17 +16,19 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
   -------------------------------------------------------------------
 ## [Unreleased]
+ - Removed Complex tags - This will be revisited at a future date. All documentation has been reverted to a string-based system.
+    In future, this may be used for multiple registrations/optional resolution. As the current feature wasn't proving this, it's been removed.
 
 ## [0.3.1] 2020-02-02
  - Fix a versioning metadata issue. Code is unchanged.
 
 ## [0.3.0] 2020-02-02
- - Added more compile-time checks to raise descriptive errors on register. 
- - Fixed a bug where circular dependencies could be registered. Registrations now need to happen in the correct order. 
+ - Added more compile-time checks to raise descriptive errors on register.
+ - Fixed a bug where circular dependencies could be registered. Registrations now need to happen in the correct order.
 
 ## [0.2.0] 2020-01-23
  - Fixed an issue where nested `Module::Classes` could not be registered.
- - Fixed an issue where hard-to-infer blocks could not be registered 
+ - Fixed an issue where hard-to-infer blocks could not be registered
 
 ## [0.1.0] 2020-01-22
  - Package Release - Hooray!
