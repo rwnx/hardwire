@@ -8,7 +8,7 @@ module HardWire
   # Attach this annotation to a #initialize function to indicate which tags this method needs to resolve
   # for each dependency.
   # ```
-  # @[HardWire::Tags(db_service: "secondary,primary")]
+  # @[HardWire::Tags(db_service: "secondary")]
   # def initialize(db_service : DbService)
   # ```
   # Use keys that match the arguments you're trying to inject, and csv-strings for tags
@@ -53,11 +53,14 @@ module HardWire
       # Users can also run their own checks at runtime for length, structure, etc.
       REGISTRATIONS = [] of String
 
-      def self.registered?(target : Class, tags : String = "") : Bool
-        tagstring = "_" + tags.strip.split(",").map(&.strip).map(&.downcase).sort.join("_")
-        return REGISTRATIONS.includes? target.name + tagstring
+      def self.registered?(target : Class) : Bool
+        self.registered?(target, "default")
       end
 
+      def self.registered?(target : Class, tagstring : String) : Bool
+        tagstring = "_" + tagstring.strip.downcase
+        return REGISTRATIONS.includes? target.name + tagstring
+      end
 
       # Create a new registration from the passed type, lifecycle, and tags
       #
@@ -72,21 +75,21 @@ module HardWire
       #   This is used for making sure things have been registered/not registered twice.
       # * Tags are converted into classes, so that they can be passed around at compile time.
       #   This means you'll get missing const errors when you fail to register properly, but it should be clear why.
-      macro register(path, lifecycle = :singleton, tags = nil, &block )
-        # Normalize register_tags to array of tags (string)
-        \{% if tags != nil %}
-          \{% register_tags = tags.strip.split(",").map(&.strip).map(&.downcase).sort %}
-        \{% else %}
-          \{% register_tags = [] of String %}
-        \{% end %}
+      macro register(path, lifecycle = :singleton, tagstring = nil, &block )
+
+        \{% raise "Reserved Tag: `default`" if tagstring == "default" %}
+        \{% tagstring = "default" if tagstring == nil %}
+        \{% raise "invalid tag characters in tagstring: #{tagstring}. Please use \\w+ patterns only" if tagstring =~ /[^\w]/  %}
+
+        \{% register_tag = tagstring.strip.downcase %}
 
         \{% selftype = path.resolve %}
         \{% if ![:singleton, :transient].includes? lifecycle %}
           \{% raise "Unknown Lifecycle #{lifecycle}" %}
         \{% end %}
 
-        \{% if REGISTRATIONS.includes? "#{selftype.id}_#{register_tags.join("_").id}" %}
-          \{% raise "HardWire/Duplicate Registration: existing (#{selftype.id}, #{register_tags})." %}
+        \{% if REGISTRATIONS.includes? "#{selftype.id}_#{register_tag.id}" %}
+          \{% raise "HardWire/Duplicate Registration: existing (#{selftype.id}, #{register_tag})." %}
         \{% end %}
 
 
@@ -97,23 +100,21 @@ module HardWire
         # These generated tags allow us to resolve constructors using static type information.
         module Tags
           module \{{safetype.id}}
-            \{% for tag in register_tags %}
-              class \{{tag.upcase.id}}
-              end
-            \{% end %}
+            class \{{register_tag.upcase.id}}
+            end
           end
         end
 
         \{% if lifecycle == :singleton %}
           # class var declaration for singleton
-          @@\{{safetype.id}}\{%for tag in register_tags %}_\{{tag.id}}\{% end %} : \{{selftype.id}}?
+          @@\{{safetype.id}}_\{{register_tag.id}} : \{{selftype.id}}?
         \{% end %}
 
         # Resolve an instance of a class
-        def self.resolve( type : \{{selftype.class}},  \{% for tag in register_tags %} \{{tag.id}} : Tags::\{{safetype.id}}::\{{tag.upcase.id}}.class, \{% end %} ) : \{{selftype.id}}
+        def self.resolve( type : \{{selftype.class}}, \{{register_tag.id}} : Tags::\{{safetype.id}}::\{{register_tag.upcase.id}}.class ) : \{{selftype.id}}
           # Singletons: memoize to class var
           \{% if lifecycle == :singleton %}
-            @@\{{safetype.id}}\{%for tag in register_tags %}_\{{tag.id}}\{% end %} ||=
+            @@\{{safetype.id}}_\{{register_tag.id}} ||=
           \{% end %}
 
           \{% if block %}
@@ -139,24 +140,20 @@ module HardWire
                 \{{arg.name.id}}: self.resolve(
                   type: \{{arg.restriction}},
 
-                  \{% argtags = [] of Type %}
+                  \{% resolve_tag = "default" %}
+
                   \{% if tagannotation = constructor.annotation(::HardWire::Tags) %}
-                    \{% for name, tagcsv in tagannotation.named_args %}
+                    \{% for name, annotation_tag in tagannotation.named_args %}
                       \{% if name == arg.name.id %}
-                        \{% for tag in tagcsv.split(",").sort %}
-                          \{% argtags.push tag.strip.id %}
-                        \{% end %}
+                        \{% resolve_tag = annotation_tag.strip.downcase.id %}
                       \{% end %}
                     \{% end %}
 
-                    \{% argtags = argtags.sort %}
-                    \{% for tag in argtags %}
-                      \{{tag}}: Tags::\{{arg.restriction.stringify.gsub(/[^\w]/, "_").id}}::\{{tag.upcase.id}},
-                    \{% end %}
+                    \{{resolve_tag}}: Tags::\{{arg.restriction.stringify.gsub(/[^\w]/, "_").id}}::\{{resolve_tag.upcase.id}}
                   \{% end %}
 
-                  \{% if !REGISTRATIONS.includes? "#{arg.restriction.id}_#{argtags.join("_").id}" %}
-                    \{% raise "HardWire/Missing Dependency: unabled to register (#{selftype.id}, #{register_tags}), missing #{arg.name}: (#{arg.restriction}, #{argtags})" %}
+                  \{% if !REGISTRATIONS.includes? "#{arg.restriction.id}_#{resolve_tag.id}" %}
+                    \{% raise "HardWire/Missing Dependency: unabled to register (#{selftype.id}, #{register_tag}), missing #{arg.name}: (#{arg.restriction}, #{resolve_tag})" %}
                   \{% end %}
                 ),
               \{% end %}
@@ -165,7 +162,7 @@ module HardWire
           \{% end %}
         end
 
-        \{% REGISTRATIONS << "#{selftype.id}_#{register_tags.join("_").id}" %}
+        \{% REGISTRATIONS << "#{selftype.id}_#{register_tag.id}" %}
       end
 
       # Register a transient dependency.
