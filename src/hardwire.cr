@@ -145,9 +145,10 @@ module HardWire
                         \{% resolve_tag = annotation_tag.strip.downcase.id %}
                       \{% end %}
                     \{% end %}
-
-                    \{{resolve_tag}}: Tags::\{{arg.restriction.stringify.gsub(/[^\w]/, "_").id}}::\{{resolve_tag.upcase.id}}
                   \{% end %}
+                  
+                  \{{resolve_tag}}: Tags::\{{arg.restriction.stringify.gsub(/[^\w]/, "_").id}}::\{{resolve_tag.upcase.id}}
+
 
                   \{% if !REGISTRATIONS.includes? "#{arg.restriction.id}_#{resolve_tag.id}" %}
                     \{% raise "HardWire/Missing Dependency: unabled to register (#{selftype.id}, #{register_tag}), missing #{arg.name}: (#{arg.restriction}, #{resolve_tag})" %}
