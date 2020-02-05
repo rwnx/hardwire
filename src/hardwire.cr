@@ -3,7 +3,7 @@
 # See `Root` for documentation on the container api.
 module HardWire
   # This constant is provided for convenience only! You must update shard.yml when updating the version.
-  VERSION = "0.4.0"
+  VERSION = "0.4.1"
 
   # Attach this annotation to a #initialize function to indicate which tags this method needs to resolve
   # for each dependency.
