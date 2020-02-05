@@ -70,6 +70,23 @@ module SecondContainer
   singleton CheekyService
 end
 
+
+class DifferentScopedThing
+  def initialize(@nested : Deep::Nested::Item)
+  end
+end
+module Deep::Nested
+  module Container
+    include HardWire::Container
+
+    # Registering in a different scope than will be used to resolve it
+    singleton Item
+
+    # Depends on Deep::Nested::Item, not Item
+    singleton DifferentScopedThing
+  end
+end
+
 describe HardWire do
   describe HardWire::Container do
     describe "#registered?" do
@@ -115,6 +132,10 @@ describe HardWire do
         transient2 = BasicContainer.resolve CheekyService
 
         transient1.should_not eq transient2
+      end
+
+      it "should resolve a dependency in an alternate scope" do
+        thing = Deep::Nested::Container.resolve DifferentScopedThing
       end
     end
   end

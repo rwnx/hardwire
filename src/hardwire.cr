@@ -3,7 +3,7 @@
 # See `Root` for documentation on the container api.
 module HardWire
   # This constant is provided for convenience only! You must update shard.yml when updating the version.
-  VERSION = "0.4.0"
+  VERSION = "0.4.1"
 
   # Attach this annotation to a #initialize function to indicate which tags this method needs to resolve
   # for each dependency.
@@ -133,9 +133,10 @@ module HardWire
 
             \{% if constructor != nil %}
               \{% for arg in constructor.args %}
+              \{% argtype = arg.restriction.resolve %}
 
                 \{{arg.name.id}}: self.resolve!(
-                  type: \{{arg.restriction}},
+                  type: \{{argtype}},
 
                   \{% resolve_tag = "default" %}
 
@@ -145,12 +146,13 @@ module HardWire
                         \{% resolve_tag = annotation_tag.strip.downcase.id %}
                       \{% end %}
                     \{% end %}
-
-                    \{{resolve_tag}}: Tags::\{{arg.restriction.stringify.gsub(/[^\w]/, "_").id}}::\{{resolve_tag.upcase.id}}
                   \{% end %}
 
-                  \{% if !REGISTRATIONS.includes? "#{arg.restriction.id}_#{resolve_tag.id}" %}
-                    \{% raise "HardWire/Missing Dependency: unabled to register (#{selftype.id}, #{register_tag}), missing #{arg.name}: (#{arg.restriction}, #{resolve_tag})" %}
+                  \{{resolve_tag}}: Tags::\{{argtype.stringify.gsub(/[^\w]/, "_").id}}::\{{resolve_tag.upcase.id}}
+
+
+                  \{% if !REGISTRATIONS.includes? "#{argtype.id}_#{resolve_tag.id}" %}
+                    \{% raise "HardWire/Missing Dependency: unabled to register (#{selftype.id}, #{register_tag}), missing #{arg.name}: (#{argtype}, #{resolve_tag})" %}
                   \{% end %}
                 ),
               \{% end %}
