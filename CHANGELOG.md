@@ -17,6 +17,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   -------------------------------------------------------------------
 ## [Unreleased]
 
+## [0.4.1] 2020-02-05
+ - Fixed an issue where resolving a dependency in a different namespace would fail.
+ - Fixed an issue where an untagged dependency would fail to resolve in certain cases.
+
 ## [0.4.0] 2020-02-03
  - Removed Complex tags - This will be revisited at a future date. All documentation has been reverted to a single string-based system.
     In future, this may be used for multiple registrations/optional resolution. As the current feature wasn't providing this, it's been removed.
