@@ -133,9 +133,10 @@ module HardWire
 
             \{% if constructor != nil %}
               \{% for arg in constructor.args %}
+              \{% argtype = arg.restriction.resolve %}
 
                 \{{arg.name.id}}: self.resolve!(
-                  type: \{{arg.restriction}},
+                  type: \{{argtype}},
 
                   \{% resolve_tag = "default" %}
 
@@ -147,11 +148,11 @@ module HardWire
                     \{% end %}
                   \{% end %}
 
-                  \{{resolve_tag}}: Tags::\{{arg.restriction.stringify.gsub(/[^\w]/, "_").id}}::\{{resolve_tag.upcase.id}}
+                  \{{resolve_tag}}: Tags::\{{argtype.stringify.gsub(/[^\w]/, "_").id}}::\{{resolve_tag.upcase.id}}
 
 
-                  \{% if !REGISTRATIONS.includes? "#{arg.restriction.resolve.id}_#{resolve_tag.id}" %}
-                    \{% raise "HardWire/Missing Dependency: unabled to register (#{selftype.id}, #{register_tag}), missing #{arg.name}: (#{arg.restriction}, #{resolve_tag})" %}
+                  \{% if !REGISTRATIONS.includes? "#{argtype.id}_#{resolve_tag.id}" %}
+                    \{% raise "HardWire/Missing Dependency: unabled to register (#{selftype.id}, #{register_tag}), missing #{arg.name}: (#{argtype}, #{resolve_tag})" %}
                   \{% end %}
                 ),
               \{% end %}
