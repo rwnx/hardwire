@@ -3,7 +3,7 @@
 # See `Root` for documentation on the container api.
 module HardWire
   # This constant is provided for convenience only! You must update shard.yml when updating the version.
-  VERSION = "0.4.0"
+  VERSION = "0.4.1"
 
   # Attach this annotation to a #initialize function to indicate which tags this method needs to resolve
   # for each dependency.
@@ -117,40 +117,44 @@ module HardWire
           {% end %}
 
           {% if block %}
+            # block passed - use custom init with resolve, etc
             ({{block.body}})
           {% else %}
-            # Build a dependency through constructor introspection
+            # No block - introspection time.
             {{selftype.id}}.new(
-            {% constructors = selftype.methods.select { |m| m.name == "initialize" } %}
-            # Find the constructor that's either:
-            # a. The only initialize method or b. the only _annotated_ initialize method
-            {% if constructors.size > 1 %}
-              {% annotated_constructors = constructors.select { |m| m.annotation(::HardWire::Inject) } %}
-              {% raise "HardWire/Too Many Constructors: target: #{path}. Only one constructor can be annotated with @[HardWire::Inject]." if annotated_constructors.size > 1 %}
-              {% raise "HardWire/Unknown Constructor: target: #{path}. Annotate your injectable constructor with @[HardWire::Inject]" if annotated_constructors.size < 1 %}
-              {% constructor = annotated_constructors.first %}
+            {% inits = selftype.methods.select { |m| m.name == "initialize" } %}
+            # If multiple constructors are found, we want the annotated one
+            {% if inits.size > 1 %}
+              {% annotated = inits.select { |m| m.annotation(::HardWire::Inject) } %}
+              {% raise "HardWire/Too Many Constructors: target: #{path}. Only one constructor can be annotated with @[HardWire::Inject]." if annotated.size > 1 %}
+              {% raise "HardWire/Unknown Constructor: target: #{path}. Annotate your injectable constructor with @[HardWire::Inject]" if annotated.size < 1 %}
+              {% constructor = annotated.first %}
             {% else %}
-              {% constructor = constructors.first %}
+              {% constructor = inits.first %}
             {% end %}
 
             {% if constructor != nil %}
               {% for arg in constructor.args %}
+              {% argtype = arg.restriction.resolve %}
+
                 {{arg.name.id}}: self.resolve!(
-                  type: {{arg.restriction}},
+                  type: {{argtype}},
 
                   {% resolve_tag = "default" %}
+
                   {% if tagannotation = constructor.annotation(::HardWire::Tags) %}
                     {% for name, annotation_tag in tagannotation.named_args %}
                       {% if name == arg.name.id %}
                         {% resolve_tag = annotation_tag.strip.downcase.id %}
                       {% end %}
                     {% end %}
-
-                    {{resolve_tag}}: Tags::{{arg.restriction.stringify.gsub(/[^\w]/, "_").id}}::{{resolve_tag.upcase.id}}
                   {% end %}
 
-                  {% if !REGISTRATIONS.includes? "#{arg.restriction.id}_#{resolve_tag.id}" %}
-                    {% raise "HardWire/Missing Dependency: unabled to register (#{selftype.id}, #{register_tag}), missing #{arg.name}: (#{arg.restriction}, #{resolve_tag})" %}
+                  {{resolve_tag}}: Tags::{{argtype.stringify.gsub(/[^\w]/, "_").id}}::{{resolve_tag.upcase.id}}
+
+
+                  {% if !REGISTRATIONS.includes? "#{argtype.id}_#{resolve_tag.id}" %}
+                    {% raise "HardWire/Missing Dependency: unabled to register (#{selftype.id}, #{register_tag}), missing #{arg.name}: (#{argtype}, #{resolve_tag})" %}
                   {% end %}
                 ),
               {% end %}
