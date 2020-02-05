@@ -16,9 +16,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
   -------------------------------------------------------------------
 ## [Unreleased]
+- Changed some macro sequences to make them easier to understand.
 
 ## [0.4.1] 2020-02-05
- - Fixed an issue where resolving a dependency in a different namespace would fail
+ - Fixed an issue where resolving a dependency in a different namespace would fail.
  - Fixed an issue where an untagged dependency would fail to resolve in certain cases.
 
 ## [0.4.0] 2020-02-03
