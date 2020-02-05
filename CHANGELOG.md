@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
   -------------------------------------------------------------------
 ## [Unreleased]
+ - Fixed an issue where resolving a dependency in a different namespace would fail
  - Fixed an issue where an untagged dependency would not be resolved properly in some circumstances.
 
 ## [0.4.0] 2020-02-03
