@@ -59,6 +59,8 @@ module HardWire
         {{@type}}.resolve!(\{{target}}, {{@type}}::Tags::\{{target.resolve.stringify.gsub(/[^\w]/, "_").id}}::\{{resolve_tag.upcase.id}} )
       end
 
+      {% verbatim do %}
+
       # Create a new registration from the passed type, lifecycle, and tags
       #
       # Registration is essentially making a constructor method (`self.resolve`) for the dependency,
@@ -74,123 +76,125 @@ module HardWire
       #   This means you'll get missing const errors when you fail to register properly, but it should be clear why.
       macro register(path, lifecycle = :singleton, tagstring = nil, &block )
 
-        \{% raise "Hardwire/Reserved Tag: `default`. This is used internally - please choose a different name!" if tagstring == "default" %}
-        \{% tagstring = "default" if tagstring == nil %}
-        \{% raise "Hardwire/Invalid Tag Characters. #{tagstring}. Please use \\w+ patterns only" if tagstring =~ /[^\w]/  %}
+        {% raise "Hardwire/Reserved Tag: `default`. This is used internally - please choose a different name!" if tagstring == "default" %}
+        {% tagstring = "default" if tagstring == nil %}
+        {% raise "Hardwire/Invalid Tag Characters. #{tagstring}. Please use \\w+ patterns only" if tagstring =~ /[^\w]/  %}
 
-        \{% register_tag = tagstring.strip.downcase %}
+        {% register_tag = tagstring.strip.downcase %}
 
-        \{% selftype = path.resolve %}
-        \{% if ![:singleton, :transient].includes? lifecycle %}
-          \{% raise "Unknown Lifecycle #{lifecycle}" %}
-        \{% end %}
+        {% selftype = path.resolve %}
+        {% if ![:singleton, :transient].includes? lifecycle %}
+          {% raise "Unknown Lifecycle #{lifecycle}" %}
+        {% end %}
 
-        \{% if REGISTRATIONS.includes? "#{selftype.id}_#{register_tag.id}" %}
-          \{% raise "HardWire/Duplicate Registration: existing (#{selftype.id}, #{register_tag})." %}
-        \{% end %}
+        {% if REGISTRATIONS.includes? "#{selftype.id}_#{register_tag.id}" %}
+          {% raise "HardWire/Duplicate Registration: existing (#{selftype.id}, #{register_tag})." %}
+        {% end %}
 
 
-        \{% safetype = selftype.stringify.gsub(/[^\w]/, "_") %}
+        {% safetype = selftype.stringify.gsub(/[^\w]/, "_") %}
 
         # The Tags module contains all registered tags as classes.
         #
         # These generated tags allow us to resolve constructors using static type information.
         module Tags
-          module \{{safetype.id}}
-            class \{{register_tag.upcase.id}}
+          module {{safetype.id}}
+            class {{register_tag.upcase.id}}
             end
           end
         end
 
-        \{% if lifecycle == :singleton %}
+        {% if lifecycle == :singleton %}
           # class var declaration for singleton
-          @@\{{safetype.id}}_\{{register_tag.id}} : \{{selftype.id}}?
-        \{% end %}
+          @@{{safetype.id}}_{{register_tag.id}} : {{selftype.id}}?
+        {% end %}
 
         # Resolve an instance of a class
-        def self.resolve!( type : \{{selftype.class}}, \{{register_tag.id}} : Tags::\{{safetype.id}}::\{{register_tag.upcase.id}}.class ) : \{{selftype.id}}
+        def self.resolve!( type : {{selftype.class}}, {{register_tag.id}} : Tags::{{safetype.id}}::{{register_tag.upcase.id}}.class ) : {{selftype.id}}
           # Singletons: memoize to class var
-          \{% if lifecycle == :singleton %}
-            @@\{{safetype.id}}_\{{register_tag.id}} ||=
-          \{% end %}
+          {% if lifecycle == :singleton %}
+            @@{{safetype.id}}_{{register_tag.id}} ||=
+          {% end %}
 
-          \{% if block %}
+          {% if block %}
             # block passed - use custom init with resolve, etc
-            (\{{block.body}})
-          \{% else %}
+            ({{block.body}})
+          {% else %}
             # No block - introspection time.
-            \{{selftype.id}}.new(
-            \{% inits = selftype.methods.select { |m| m.name == "initialize" } %}
+            {{selftype.id}}.new(
+            {% inits = selftype.methods.select { |m| m.name == "initialize" } %}
             # If multiple constructors are found, we want the annotated one
-            \{% if inits.size > 1 %}
-              \{% annotated = inits.select { |m| m.annotation(::HardWire::Inject) } %}
-              \{% raise "HardWire/Too Many Constructors: target: #{path}. Only one constructor can be annotated with @[HardWire::Inject]." if annotated.size > 1 %}
-              \{% raise "HardWire/Unknown Constructor: target: #{path}. Annotate your injectable constructor with @[HardWire::Inject]" if annotated.size < 1 %}
-              \{% constructor = annotated.first %}
-            \{% else %}
-              \{% constructor = inits.first %}
-            \{% end %}
+            {% if inits.size > 1 %}
+              {% annotated = inits.select { |m| m.annotation(::HardWire::Inject) } %}
+              {% raise "HardWire/Too Many Constructors: target: #{path}. Only one constructor can be annotated with @[HardWire::Inject]." if annotated.size > 1 %}
+              {% raise "HardWire/Unknown Constructor: target: #{path}. Annotate your injectable constructor with @[HardWire::Inject]" if annotated.size < 1 %}
+              {% constructor = annotated.first %}
+            {% else %}
+              {% constructor = inits.first %}
+            {% end %}
 
-            \{% if constructor != nil %}
-              \{% for arg in constructor.args %}
-              \{% argtype = arg.restriction.resolve %}
+            {% if constructor != nil %}
+              {% for arg in constructor.args %}
+              {% argtype = arg.restriction.resolve %}
 
-                \{{arg.name.id}}: self.resolve!(
-                  type: \{{argtype}},
+                {{arg.name.id}}: self.resolve!(
+                  type: {{argtype}},
 
-                  \{% resolve_tag = "default" %}
+                  {% resolve_tag = "default" %}
 
-                  \{% if tagannotation = constructor.annotation(::HardWire::Tags) %}
-                    \{% for name, annotation_tag in tagannotation.named_args %}
-                      \{% if name == arg.name.id %}
-                        \{% resolve_tag = annotation_tag.strip.downcase.id %}
-                      \{% end %}
-                    \{% end %}
-                  \{% end %}
+                  {% if tagannotation = constructor.annotation(::HardWire::Tags) %}
+                    {% for name, annotation_tag in tagannotation.named_args %}
+                      {% if name == arg.name.id %}
+                        {% resolve_tag = annotation_tag.strip.downcase.id %}
+                      {% end %}
+                    {% end %}
+                  {% end %}
 
-                  \{{resolve_tag}}: Tags::\{{argtype.stringify.gsub(/[^\w]/, "_").id}}::\{{resolve_tag.upcase.id}}
+                  {{resolve_tag}}: Tags::{{argtype.stringify.gsub(/[^\w]/, "_").id}}::{{resolve_tag.upcase.id}}
 
 
-                  \{% if !REGISTRATIONS.includes? "#{argtype.id}_#{resolve_tag.id}" %}
-                    \{% raise "HardWire/Missing Dependency: unabled to register (#{selftype.id}, #{register_tag}), missing #{arg.name}: (#{argtype}, #{resolve_tag})" %}
-                  \{% end %}
+                  {% if !REGISTRATIONS.includes? "#{argtype.id}_#{resolve_tag.id}" %}
+                    {% raise "HardWire/Missing Dependency: unabled to register (#{selftype.id}, #{register_tag}), missing #{arg.name}: (#{argtype}, #{resolve_tag})" %}
+                  {% end %}
                 ),
-              \{% end %}
-            \{% end %}
+              {% end %}
+            {% end %}
             )
-          \{% end %}
+          {% end %}
         end
 
-        \{% REGISTRATIONS << "#{selftype.id}_#{register_tag.id}" %}
+        {% REGISTRATIONS << "#{selftype.id}_#{register_tag.id}" %}
       end
 
       # Register a transient dependency.
       macro transient(path, tags = nil, &block)
-        \{% if block %}
-          register \{{path}}, :transient, \{{tags}} \{{block}}
-        \{% else %}
-          register \{{path}}, :transient, \{{tags}}
-        \{% end %}
+        {% if block %}
+          register {{path}}, :transient, {{tags}} {{block}}
+        {% else %}
+          register {{path}}, :transient, {{tags}}
+        {% end %}
       end
 
       # Register a singleton dependency.
       macro singleton(path, tags = nil, &block)
-        \{% if block %}
-          register \{{path}}, :singleton, \{{tags}} \{{block}}
-        \{% else %}
-          register \{{path}}, :singleton, \{{tags}}
-        \{% end %}
+        {% if block %}
+          register {{path}}, :singleton, {{tags}} {{block}}
+        {% else %}
+          register {{path}}, :singleton, {{tags}}
+        {% end %}
       end
 
       # Register a transient dependency.
       macro transient(path, &block)
-          transient(\{{path}}) \{{block}}
+          transient({{path}}) {{block}}
       end
 
       # Register a singleton dependency.
       macro singleton(path, &block)
-          singleton(\{{path}}) \{{block}}
+          singleton({{path}}) {{block}}
       end
+
+      {% end %}
     end
   end
 
