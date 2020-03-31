@@ -1,6 +1,7 @@
 require "./spec_helper"
 
 class Service1; end
+
 class Service2; end
 
 class Deep::Nested::Item; end
@@ -31,6 +32,7 @@ class Application
   def initialize
     raise "This constructor should not be used! HardWire::Inject is not working"
     # cruft to satisfy compiler checks
+    # ameba:disable Lint/UnreachableCode
     @singleton1 = CheekyService.new
     @singleton2 = CheekyService.new
     @blockvalue = "donotuse"
@@ -70,11 +72,11 @@ module SecondContainer
   singleton CheekyService
 end
 
-
 class DifferentScopedThing
   def initialize(@nested : Deep::Nested::Item)
   end
 end
+
 module Deep::Nested
   module Container
     include HardWire::Container
@@ -135,7 +137,7 @@ describe HardWire do
       end
 
       it "should resolve a dependency in an alternate scope" do
-        thing = Deep::Nested::Container.resolve DifferentScopedThing
+        Deep::Nested::Container.resolve DifferentScopedThing
       end
     end
   end

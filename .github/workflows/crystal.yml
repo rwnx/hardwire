@@ -1,6 +1,9 @@
 name: Crystal CI
 
-on: [push]
+on:
+  push:
+  schedule:
+    - cron: "0 2 * * *"
 
 jobs:
   build:
@@ -8,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     container:
-      image: crystallang/crystal
+      image: crystallang/crystal:latest
 
     steps:
     - uses: actions/checkout@v1
@@ -16,3 +19,8 @@ jobs:
       run: shards install
     - name: Run tests
       run: crystal spec
+    - name: Run Lint
+      run: |
+        bin/ameba
+        crystal tool format --check
+

@@ -9,4 +9,3 @@ class Container
   singleton SpecialService
   transient SpecialService
 end
-

@@ -78,7 +78,7 @@ module HardWire
 
         {% raise "Hardwire/Reserved Tag: `default`. This is used internally - please choose a different name!" if tagstring == "default" %}
         {% tagstring = "default" if tagstring == nil %}
-        {% raise "Hardwire/Invalid Tag Characters. #{tagstring}. Please use \\w+ patterns only" if tagstring =~ /[^\w]/  %}
+        {% raise "Hardwire/Invalid Tag Characters. #{tagstring}. Please use \\w+ patterns only" if tagstring =~ /[^\w]/ %}
 
         {% register_tag = tagstring.strip.downcase %}
 
