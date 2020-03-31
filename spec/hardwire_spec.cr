@@ -1,6 +1,7 @@
 require "./spec_helper"
 
 class Service1; end
+
 class Service2; end
 
 class Deep::Nested::Item; end
@@ -70,11 +71,11 @@ module SecondContainer
   singleton CheekyService
 end
 
-
 class DifferentScopedThing
   def initialize(@nested : Deep::Nested::Item)
   end
 end
+
 module Deep::Nested
   module Container
     include HardWire::Container

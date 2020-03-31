@@ -22,4 +22,3 @@ class Container
   singleton ParentService
   transient SpecialService
 end
-
