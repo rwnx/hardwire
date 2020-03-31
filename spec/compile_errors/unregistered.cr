@@ -8,7 +8,6 @@ class ParentService
   end
 end
 
-
 module CircContainer
   include HardWire::Container
 

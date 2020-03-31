@@ -10,4 +10,3 @@ class Container
   singleton SpecialService, "onetwothree" # not a duplicate
   transient SpecialService, "onetwo"
 end
-
