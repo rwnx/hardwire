@@ -1,4 +1,5 @@
 # HardWire ⚡
+![Crystal CI](https://github.com/jerometwell/hardwire/workflows/Crystal%20CI/badge.svg)
 
 A Compile-time Dependency Injection system for Crystal.
 

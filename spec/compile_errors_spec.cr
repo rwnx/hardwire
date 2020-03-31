@@ -4,7 +4,7 @@ require "./spec_helper"
 # This will give us the most flexibility for refactoring
 describe "HardWire" do
   it "should fail to compile an unregistered dependency" do
-    assert_compile_error "compile_errors/unregistered.cr", "Error: HardWire/Missing Dependency: unabled to register (ParentService, \"default\"), missing requiredDependency: (RequiredDependency, \"default\")"
+    assert_compile_error "compile_errors/unregistered.cr", "Error: HardWire/Missing Dependency: unabled to register (ParentService, \"default\"), missing required_dependency: (RequiredDependency, \"default\")"
   end
 
   it "should fail to compile a circular dependency" do

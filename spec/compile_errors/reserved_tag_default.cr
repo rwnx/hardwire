@@ -8,4 +8,3 @@ class Container
 
   singleton SpecialService, "default"
 end
-
