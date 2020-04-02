@@ -1,5 +1,5 @@
 # HardWire ⚡
-![Crystal CI](https://github.com/jerometwell/hardwire/workflows/Crystal%20CI/badge.svg)
+[![Crystal CI](https://github.com/jerometwell/hardwire/workflows/Crystal%20CI/badge.svg?branch=master)](https://github.com/jerometwell/hardwire/actions?query=workflow%3A%22Crystal+CI%22)
 
 A Compile-time Dependency Injection system for Crystal.
 
