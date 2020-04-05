@@ -6,13 +6,13 @@ end
 class SpecialService
   # too many annotated constructors
   @[HardWire::Inject]
-  def initialize(@parentService : ParentService)
+  def initialize(@parent_service : ParentService)
   end
 
   # too many annotated constructors
   @[HardWire::Inject]
   def initialize(string : String)
-    @parentService = ParentService.new
+    @parent_service = ParentService.new
   end
 end
 
@@ -22,4 +22,3 @@ class Container
   singleton ParentService
   transient SpecialService
 end
-

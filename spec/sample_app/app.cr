@@ -1,6 +1,7 @@
 module SampleApp
   class DbService
   end
+
   class Application
     property config
 

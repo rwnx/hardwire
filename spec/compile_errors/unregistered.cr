@@ -4,10 +4,9 @@ class RequiredDependency
 end
 
 class ParentService
-  def initialize(@requiredDependency : RequiredDependency)
+  def initialize(@required_dependency : RequiredDependency)
   end
 end
-
 
 module CircContainer
   include HardWire::Container

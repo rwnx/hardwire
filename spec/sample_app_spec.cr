@@ -1,11 +1,10 @@
 require "./spec_helper"
 require "./sample_app/*"
 
-
 module SampleContainer
   include HardWire::Container
 
-  singleton(SampleApp::DbService) 
+  singleton(SampleApp::DbService)
 
   singleton SampleApp::Application
 end
