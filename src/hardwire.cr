@@ -2,7 +2,6 @@
 #
 # See `Root` for documentation on the container api.
 module HardWire
-  # This constant is provided for convenience only! You must update shard.yml when updating the version.
   VERSION = {{`shards version`}}
 
   # Attach this annotation to a #initialize function to indicate which tags this method needs to resolve
@@ -46,16 +45,22 @@ module HardWire
       # Users can also run their own checks at runtime for length, structure, etc.
       REGISTRATIONS = [] of Tuple(String, String)
 
-      def self.registered?(target : Class) : Bool
-        self.registered?(target, "default")
+      # The Tags module contains all registered tags as classes.
+      #
+      # These generated tags allow us to resolve constructors using static type information.
+      module Tags
       end
 
-      def self.registered?(target : Class, tag : String) : Bool
+      # Interrogate the container for a registration
+      def self.registered?(target : Class, tag = "default") : Bool
         return REGISTRATIONS.includes?({target.name, tag.strip.downcase})
       end
 
-      macro resolve(target, dependency_tag = "default")
-        {{@type}}.resolve!(\{{target}}, {{@type}}::Tags::\{{target.resolve.stringify.gsub(/[^\w]/, "_").id}}::\{{dependency_tag.upcase.id}} )
+      # Resolve a dependency from a class and a string tag
+      #
+      # This macro does the legwork of mangling the dynamic-looking call into the statically-defined `resolve!` method
+      macro resolve(target, tag = "default")
+        {{@type}}.resolve!(\{{target}}, {{@type}}::Tags::\{{tag.upcase.id}} )
       end
 
       {% verbatim do %}
@@ -90,6 +95,9 @@ module HardWire
 
       # Create a new registration from the passed type, lifecycle, and tags
       #
+      # Note that this is not designed to be user-facing - things like block capture are done in the `transient` `singleton` helpers
+      # although this can't be made private because those are public.
+      #
       # Registration is essentially making a constructor method (`self.resolve`) for the dependency,
       # that lives on the container.
       #
@@ -101,15 +109,16 @@ module HardWire
       #   This is used for making sure things have been registered/not registered twice.
       # * Tags are converted into classes, so that they can be passed around at compile time.
       #   This means you'll get missing const errors when you fail to register properly, but it should be clear why.
-      macro register(path, lifecycle = :singleton, tag = nil, &block )
-
+      private macro register(path, lifecycle = :singleton, tag = nil, &block )
         {% raise "Hardwire/Reserved Tag: `default`. This is used internally - please choose a different name!" if tag == "default" %}
         {% tag = "default" if tag == nil %}
         {% raise "Hardwire/Invalid Tag Characters. #{tag}. Please use \\w+ patterns only" if tag =~ /[^\w]/ %}
 
         {% register_tag = tag.strip.downcase %}
-
         {% register_type = path.resolve %}
+        {% register_type_safe = register_type.stringify.gsub(/[^\w]/, "_") %}
+        {% register_tag_type = "Tags::#{register_tag.upcase.id}" %}
+
         {% if ![:singleton, :transient].includes? lifecycle %}
           {% raise "Unknown Lifecycle #{lifecycle}" %}
         {% end %}
@@ -118,46 +127,35 @@ module HardWire
           {% raise "HardWire/Duplicate Registration: existing (#{register_type.id}, #{register_tag})." %}
         {% end %}
 
+        # Declare a tag as a namespaced class: Tags::TAGNAME
+        class {{register_tag_type.id}}; end
 
-        {% register_type_safe = register_type.stringify.gsub(/[^\w]/, "_") %}
-
-        # The Tags module contains all registered tags as classes.
-        #
-        # These generated tags allow us to resolve constructors using static type information.
-        module Tags
-          module {{register_type_safe.id}}
-            class {{register_tag.upcase.id}}
-            end
-          end
-        end
-
+        # Pre-declare singleton classvar if required (ambiguous block return types require this)
         {% if lifecycle == :singleton %}
-          # class var declaration for singleton
           @@{{register_type_safe.id}}_{{register_tag.id}} : {{register_type.id}}?
         {% end %}
 
-        # Resolve an instance of a class
-        def self.resolve!( type : {{register_type.class}}, {{register_tag.id}} : Tags::{{register_type_safe.id}}::{{register_tag.upcase.id}}.class ) : {{register_type.id}}
+        # Define a resolve! method that instantiates the dependency that's being registered,
+        # either through the block provided or introspection on the constructor.
+        def self.resolve!( type : {{register_type.class}}, {{register_tag.id}} : {{register_tag_type.id}}.class ) : {{register_type.id}}
           # Singletons: memoize to class var
           {% if lifecycle == :singleton %}
             @@{{register_type_safe.id}}_{{register_tag.id}} ||=
           {% end %}
 
           {% if block %}
-            # block passed - use custom init with resolve, etc
             ({{block.body}})
           {% else %}
-            # No block - introspection time.
             {{register_type.id}}.new(
-              {% inits = register_type.methods.select { |m| m.name == "initialize" } %}
+              {% found_ctors = register_type.methods.select { |m| m.name == "initialize" } %}
               # If multiple constructors are found, we want the annotated one
-              {% if inits.size > 1 %}
-                {% annotated = inits.select { |m| m.annotation(::HardWire::Inject) } %}
-                {% raise "HardWire/Too Many Constructors: target: #{path}. Only one constructor can be annotated with @[HardWire::Inject]." if annotated.size > 1 %}
-                {% raise "HardWire/Unknown Constructor: target: #{path}. Annotate your injectable constructor with @[HardWire::Inject]" if annotated.size < 1 %}
-                {% constructor = annotated.first %}
+              {% if found_ctors.size > 1 %}
+                {% annotated_ctors = found_ctors.select { |x| x.annotation(::HardWire::Inject) } %}
+                {% raise "HardWire/Too Many Constructors: target: #{path}. Only one constructor can be annotated with @[HardWire::Inject]." if annotated_ctors.size > 1 %}
+                {% raise "HardWire/Unknown Constructor: target: #{path}. Annotate your injectable constructor with @[HardWire::Inject]" if annotated_ctors.size < 1 %}
+                {% constructor = annotated_ctors.first %}
               {% else %}
-                {% constructor = inits.first %}
+                {% constructor = found_ctors.first %}
               {% end %}
 
               {% if constructor != nil %}
@@ -181,7 +179,7 @@ module HardWire
 
                   {{dependency_name}}: self.resolve!(
                     type: {{dependency_type}},
-                    {{dependency_tag}}: Tags::{{dependency_type_safe.id}}::{{dependency_tag.upcase.id}}
+                    {{dependency_tag}}: Tags::{{dependency_tag.upcase.id}}
                   ),
                 {% end %}
               {% end %}
