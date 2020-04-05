@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
   -------------------------------------------------------------------
 ## [Unreleased]
+
+## [0.4.2] 2020-04-05
 - Changed some internal documentation to improve readability.
 - Changed some internal registration logic to improve collision/duplicate detection.
 - Changed some macro sequences to make them easier to understand.
