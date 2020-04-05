@@ -6,7 +6,7 @@ class Service2; end
 
 class Deep::Nested::Item; end
 
-class CheekyService
+class ChildService
   @@instances = 0
 
   def initialize
@@ -26,17 +26,17 @@ class Application
 
   @[HardWire::Tags(singleton1: "primary", singleton2: "primary", blockvalue: "teststring")]
   @[HardWire::Inject]
-  def initialize(@singleton1 : CheekyService, @singleton2 : CheekyService, @blockvalue : String, @transient : CheekyService)
+  def initialize(@singleton1 : ChildService, @singleton2 : ChildService, @blockvalue : String, @transient : ChildService)
   end
 
   def initialize
     raise "This constructor should not be used! HardWire::Inject is not working"
     # cruft to satisfy compiler checks
     # ameba:disable Lint/UnreachableCode
-    @singleton1 = CheekyService.new
-    @singleton2 = CheekyService.new
+    @singleton1 = ChildService.new
+    @singleton2 = ChildService.new
     @blockvalue = "donotuse"
-    @transient = CheekyService.new
+    @transient = ChildService.new
   end
 end
 
@@ -48,9 +48,9 @@ module BasicContainer
   singleton String, "teststring" {
     "blockvalue"
   }
-  singleton CheekyService, "primary"
-  transient CheekyService, "secondary"
-  transient CheekyService
+  singleton ChildService, "primary"
+  transient ChildService, "secondary"
+  transient ChildService
   singleton Application
 
   singleton Deep::Nested::Item
@@ -69,7 +69,7 @@ end
 module SecondContainer
   include HardWire::Container
 
-  singleton CheekyService
+  singleton ChildService
 end
 
 class DifferentScopedThing
@@ -89,15 +89,17 @@ module Deep::Nested
   end
 end
 
+pp HardWire::VERSION
+
 describe HardWire do
   describe HardWire::Container do
     describe "#registered?" do
       it "should return true for a registered service with tags" do
-        BasicContainer.registered?(CheekyService, "secondary").should be_true
+        BasicContainer.registered?(ChildService, "secondary").should be_true
       end
 
       it "should return true for a registered service" do
-        BasicContainer.registered?(CheekyService).should be_true
+        BasicContainer.registered?(ChildService).should be_true
       end
 
       it "should return false for an unregistered service" do
@@ -105,7 +107,7 @@ describe HardWire do
       end
 
       it "should return false for a service registered with different tags" do
-        BasicContainer.registered?(CheekyService, "notactualtag").should be_false
+        BasicContainer.registered?(ChildService, "notactualtag").should be_false
       end
     end
 
@@ -115,7 +117,7 @@ describe HardWire do
       end
 
       it "should resolve a tagged dependency" do
-        BasicContainer.resolve CheekyService, "primary"
+        BasicContainer.resolve ChildService, "primary"
       end
 
       it "should resolve block registrations correctly" do
@@ -130,8 +132,8 @@ describe HardWire do
       end
 
       it "should NOT memoize transients" do
-        transient1 = BasicContainer.resolve CheekyService
-        transient2 = BasicContainer.resolve CheekyService
+        transient1 = BasicContainer.resolve ChildService
+        transient2 = BasicContainer.resolve ChildService
 
         transient1.should_not eq transient2
       end
