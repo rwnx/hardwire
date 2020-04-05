@@ -1,8 +1,7 @@
 # A Compile-time dependency injection system for Crystal.
 #
-# See `Root` for documentation on the container api.
 module HardWire
-  VERSION = {{`shards version`}}
+  VERSION = "{{`shards version __DIR__`}}"
 
   # Attach this annotation to a #initialize function to indicate which tags this method needs to resolve
   # for each dependency.
@@ -31,8 +30,8 @@ module HardWire
 
   # A module mixin for creating a hardwire container.
   #
-  # Contains a set of class-level methods and macros for registering and interrogating the container.
-  # As all the functionality is contained in macros, see `Root` to an implementation example.
+  # No functionality-based documentation will appear here, since the module is designed to be included
+  # in other modules. See `HardWire::Root` for container-level functionality.
   # ```
   # module WhateverYouLikeContainer
   #   include Hardwire::Container
@@ -59,6 +58,9 @@ module HardWire
       # Resolve a dependency from a class and a string tag
       #
       # This macro does the legwork of mangling the dynamic-looking call into the statically-defined `resolve!` method
+      #
+      # NOTE: This method does not protect you from unregistered dependencies, since it relies on
+      # directly resolving the `resolve!` method. If you need safety - use `registered?`
       macro resolve(target, tag = "default")
         {{@type}}.resolve!(\{{target}}, {{@type}}::Tags::\{{tag.upcase.id}} )
       end
@@ -74,6 +76,11 @@ module HardWire
         {% end %}
       end
 
+      # :ditto:
+      macro transient(path, &block)
+        transient({{path}}) {{block}}
+      end
+
       # Register a singleton dependency.
       macro singleton(path, tags = nil, &block)
         {% if block %}
@@ -83,19 +90,14 @@ module HardWire
         {% end %}
       end
 
-      # Register a transient dependency.
-      macro transient(path, &block)
-          transient({{path}}) {{block}}
-      end
-
-      # Register a singleton dependency.
+      # :ditto:
       macro singleton(path, &block)
           singleton({{path}}) {{block}}
       end
 
       # Create a new registration from the passed type, lifecycle, and tags
       #
-      # Note that this is not designed to be user-facing - things like block capture are done in the `transient` `singleton` helpers
+      # NOTE: that this is not designed to be user-facing - things like block capture are done in the `transient` `singleton` helpers
       # although this can't be made private because those are public.
       #
       # Registration is essentially making a constructor method (`self.resolve`) for the dependency,
@@ -193,11 +195,10 @@ module HardWire
     end
   end
 
-  # A "Global" namespaced Container.
+  # A pre-made Container, designed to provide a concrete in-namespace module to generate documentation from.
   #
-  # Consumers of the library can use this without creating their own.
-  #
-  # We can also use it as an example of our macros, for documentation purposes.
+  # NOTE: All of the methods in this library are designed to operate _inside_ the container class,
+  # so you cannot use this container for actual dependency injection
   module Root
     include Container
   end
