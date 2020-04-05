@@ -162,7 +162,6 @@ module HardWire
                 {% for arg in constructor.args %}
                   {% dependency_name = arg.name.id %}
                   {% dependency_type = arg.restriction.resolve %}
-                  {% dependency_type_safe = dependency_type.stringify.gsub(/[^\w]/, "_") %}
                   {% dependency_tag = "default" %}
 
                   {% if tagannotation = constructor.annotation(::HardWire::Tags) %}
