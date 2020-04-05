@@ -1,20 +1,24 @@
-# A Compile-time dependency injection system for Crystal.
-#
+# A Compile-time non-intrusive dependency injection system for Crystal.
 module HardWire
-  VERSION = "{{`shards version __DIR__`}}"
+  # :nodoc:
+  VERSION = {{ `shards version #{__DIR__}`.chomp.stringify }}
 
   # Attach this annotation to a #initialize function to indicate which tags this method needs to resolve
   # for each dependency.
+  #
+  # This annotation takes a key-value set of arguments matching argument names to tags.
   # ```
+  # # resolve the db_service with tag "secondary"
   # @[HardWire::Tags(db_service: "secondary")]
   # def initialize(db_service : DbService)
   # ```
-  # Use keys that match the arguments you're trying to inject, and csv-strings for tags
   annotation Tags
   end
 
   # Attach this annotation to a #initialize function in a multi-constructor class
   # to indicate that it is to be used for dependency injection.
+  #
+  # This annotation is not required when a class has one constructor only.
   # ```
   # def initialize
   #   # wont be used
@@ -76,7 +80,7 @@ module HardWire
         {% end %}
       end
 
-      # :ditto:
+      # Register a transient dependency.
       macro transient(path, &block)
         transient({{path}}) {{block}}
       end
@@ -90,7 +94,7 @@ module HardWire
         {% end %}
       end
 
-      # :ditto:
+      # Register a singleton dependency.
       macro singleton(path, &block)
           singleton({{path}}) {{block}}
       end

@@ -89,6 +89,8 @@ module Deep::Nested
   end
 end
 
+pp HardWire::VERSION
+
 describe HardWire do
   describe HardWire::Container do
     describe "#registered?" do
