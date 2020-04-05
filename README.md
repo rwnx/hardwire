@@ -46,7 +46,7 @@ end
 ```
 
 Hardwire tries to operate with minimal modifications to other classes (unless required).
-"_simple_" classes, e.g.
+_"simple"_ classes, e.g.
   * Have a single constructor
   * Have unique dependencies/do not require tags
 
