@@ -4,12 +4,12 @@ class ParentService
 end
 
 class SpecialService
-  def initialize(@parentService : ParentService)
+  def initialize(@parent_service : ParentService)
   end
 
   # null constructor - how confusing
   def initialize
-    @parentService = ParentService.new
+    @parent_service = ParentService.new
   end
 end
 
@@ -19,4 +19,3 @@ class Container
   singleton ParentService
   transient SpecialService
 end
-

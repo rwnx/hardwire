@@ -1,4 +1,5 @@
 # HardWire ⚡
+[![Crystal CI](https://github.com/jerometwell/hardwire/workflows/Crystal%20CI/badge.svg?branch=master)](https://github.com/jerometwell/hardwire/actions?query=workflow%3A%22Crystal+CI%22)
 
 A Compile-time Dependency Injection system for Crystal.
 
@@ -45,7 +46,7 @@ end
 ```
 
 Hardwire tries to operate with minimal modifications to other classes (unless required).
-"_simple_" classes, e.g.
+_"simple"_ classes, e.g.
   * Have a single constructor
   * Have unique dependencies/do not require tags
 
