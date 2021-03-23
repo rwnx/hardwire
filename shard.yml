@@ -1,5 +1,5 @@
 name: hardwire
-version: 0.4.2
+version: 1.0.0
 
 development_dependencies:
   ameba:
@@ -14,6 +14,6 @@ targets:
 authors:
   - Jerome Twell <jtwell1@gmail.com>
 
-crystal: 0.32.1
+crystal: 1.0.0
 
 license: MIT
