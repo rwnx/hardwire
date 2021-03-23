@@ -153,10 +153,10 @@ module HardWire
             ({{block.body}})
           {% else %}
             {{register_type.id}}.new(
-              {% found_ctors = register_type.methods.select { |m| m.name == "initialize" } %}
+              {% found_ctors = register_type.methods.select(&.name.==("initialize")) %}
               # If multiple constructors are found, we want the annotated one
               {% if found_ctors.size > 1 %}
-                {% annotated_ctors = found_ctors.select { |x| x.annotation(::HardWire::Inject) } %}
+                {% annotated_ctors = found_ctors.select(&.annotation(::HardWire::Inject)) %}
                 {% raise "HardWire/Too Many Constructors: target: #{path}. Only one constructor can be annotated with @[HardWire::Inject]." if annotated_ctors.size > 1 %}
                 {% raise "HardWire/Unknown Constructor: target: #{path}. Annotate your injectable constructor with @[HardWire::Inject]" if annotated_ctors.size < 1 %}
                 {% constructor = annotated_ctors.first %}
