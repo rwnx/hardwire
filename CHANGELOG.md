@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
   -------------------------------------------------------------------
 ## [Unreleased]
+- Changed ameba version to latest to support crystal 1.0.0!
 
 ## [0.4.2] 2020-04-05
 - Changed some internal documentation to improve readability.
