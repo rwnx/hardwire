@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="generator" content="Crystal Docs 0.36.1">
+<meta name="crystal_docs.project_version" content="HEAD">
+<meta name="crystal_docs.project_name" content="hardwire">
+
+
+
+<link href="css/style.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="js/doc.js"></script>
+
+  <meta name="repository-name" content="hardwire">
+  <title>hardwire HEAD</title>
+  <script type="text/javascript">
+  CrystalDocs.base_path = "";
+  </script>
+</head>
+<body>
+
+<svg class="hidden">
+  <symbol id="octicon-link" viewBox="0 0 16 16">
+    <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path>
+  </symbol>
+</svg>
+<div class="sidebar">
+  <div class="sidebar-header">
+    <div class="search-box">
+      <input type="search" class="search-input" placeholder="Search..." spellcheck="false" aria-label="Search">
+    </div>
+
+    <div class="project-summary">
+      <h1 class="project-name">
+        <a href="index.html">
+          hardwire
+        </a>
+      </h1>
+
+      <span class="project-version">
+        HEAD
+      </span>
+    </div>
+  </div>
+
+  <div class="search-results hidden">
+    <ul class="search-list"></ul>
+  </div>
+
+  <div class="types-list">
+    <ul>
+  
+  <li class="parent " data-id="hardwire/HardWire" data-name="hardwire">
+      <a href="HardWire.html">HardWire</a>
+      
+        <ul>
+  
+  <li class=" " data-id="hardwire/HardWire/Container" data-name="hardwire::container">
+      <a href="HardWire/Container.html">Container</a>
+      
+    </li>
+  
+  <li class=" " data-id="hardwire/HardWire/Inject" data-name="hardwire::inject">
+      <a href="HardWire/Inject.html">Inject</a>
+      
+    </li>
+  
+  <li class="parent " data-id="hardwire/HardWire/Root" data-name="hardwire::root">
+      <a href="HardWire/Root.html">Root</a>
+      
+        <ul>
+  
+  <li class=" " data-id="hardwire/HardWire/Root/Tags" data-name="hardwire::root::tags">
+      <a href="HardWire/Root/Tags.html">Tags</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="hardwire/HardWire/Tags" data-name="hardwire::tags">
+      <a href="HardWire/Tags.html">Tags</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+</ul>
+
+  </div>
+</div>
+
+
+<div class="main-content">
+<h1><a id="hard-wire" class="anchor" href="#hard-wire">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>HardWire ⚡</h1>
+
+<p><a href="https://github.com/jerometwell/hardwire/actions?query=workflow%3A%22Crystal+CI%22"><img src="https://github.com/jerometwell/hardwire/workflows/Crystal%20CI/badge.svg?branch=master" alt="Crystal CI"/></a></p>
+
+<p>A Compile-time Dependency Injection system for Crystal.</p>
+
+<h2><a id="installation" class="anchor" href="#installation">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>Installation</h2>
+
+<ol><li>Add the dependency to your <code>shard.yml</code>:</li></ol>
+
+<pre><code class="language-yaml">dependencies:
+  hardwire:
+    github: jerometwell/hardwire</code></pre>
+
+<ol><li>Run <code>shards install</code></li></ol>
+
+<h2><a id="usage" class="anchor" href="#usage">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>Usage</h2>
+
+<pre><code class="language-crystal"><span class="k">require</span> <span class="s">&quot;hardwire&quot;</span></code></pre>
+
+<p>Hardwire is designed to operate inside a container object.
+Since the resolution is compile-time (Using Macros), normally this will be a module.</p>
+
+<h3><a id="creating-a-container" class="anchor" href="#creating-a-container">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>Creating a container 📦</h3>
+
+<pre><code class="language-crystal"><span class="c"># To create a new container, include `HardWire::Container`</span>
+<span class="c"># This will add the macros you need to register and resolve wiring</span>
+<span class="k">module</span> <span class="t">Container</span>
+  <span class="k">include</span> <span class="t">HardWire</span><span class="t">::</span><span class="t">Container</span>
+
+  <span class="c"># use transient/singleton to wire different lifecycles</span>
+  <span class="c"># singleton dependencies will be memoized</span>
+  <span class="c"># dependencies for the constructor will be resolved from the constructor automatically</span>
+  transient <span class="t">Dependency</span>
+  singleton <span class="t">NeedsDependency</span>
+
+  <span class="c"># you can also register dependencies with a block instead of inspecting the constructor</span>
+  <span class="c"># Your block MUST return an instance of the class you are registering</span>
+  singleton <span class="t">NeedsDependency</span> {
+    <span class="t">NeedsDependency</span>.<span class="k">new</span>( <span class="k">self</span>.resolve <span class="t">Dependency</span> )
+  }
+<span class="k">end</span></code></pre>
+
+<p>Hardwire tries to operate with minimal modifications to other classes (unless required).
+<em>"simple"</em> classes, e.g.</p>
+
+<ul><li>Have a single constructor</li><li>Have unique dependencies/do not require tags</li></ul></ul>
+
+<p>If your classes match this signature, you can wire up in the container without adding anything to the classes.</p>
+
+<p>For everything else, there's:</p>
+
+<h3><a id="multiple-constructors" class="anchor" href="#multiple-constructors">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>Multiple Constructors 🚧</h3>
+
+<p>Hardwire needs to know which constuctor function to use.</p>
+
+<p>Annotate your "Injectable" constructor with the Hardwire::Inject annotation.</p>
+
+<pre><code class="language-crystal"><span class="k">class</span> <span class="t">MultipleInits</span>
+  @[<span class="t">HardWire</span><span class="t">::</span><span class="t">Inject</span>]
+  <span class="k">def</span> <span class="m">initialize</span>(input: <span class="t">String</span>)
+    <span class="c"># register will inspect this method&#39;s arguments</span>
+    <span class="c"># [...]</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="m">initialize</span>
+    <span class="c"># will not be used for injection</span>
+    <span class="c"># [...]</span>
+  <span class="k">end</span>
+<span class="k">end</span></code></pre>
+
+<h3><a id="tags" class="anchor" href="#tags">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>Tags 🏷</h3>
+
+<p>To differentiate between registrations of <em>the same type</em>, use the HardWire::Tags annotation.
+Tags allow you to attach additional metadata to the signature. Tags themselves are string-based, simple identifiers (/\w+/) that allow you to resolve
+a different registration of the same class.</p>
+
+<pre><code class="language-crystal"><span class="c"># [...]</span>
+
+<span class="c"># registering a transient dependency with tag &quot;secret&quot;</span>
+transient <span class="t">String</span>, <span class="s">&quot;secret&quot;</span> {
+  <span class="s">&quot;a secret string&quot;</span>
+}
+
+<span class="c"># registering a singleton</span>
+<span class="c"># When no tags are set, it is considered the &quot;default&quot; registration</span>
+singleton <span class="t">DbService</span>
+
+<span class="c"># registering a different singleton with a tag</span>
+singleton <span class="t">DbService</span>, <span class="s">&quot;primary&quot;</span>
+
+<span class="c"># Resolving Dependencies</span>
+<span class="k">class</span> <span class="t">Resolving</span>
+  @[<span class="t">Hardwire</span><span class="t">::</span><span class="t">Tags</span>(input: <span class="s">&quot;secret&quot;</span>, primary_db: <span class="s">&quot;primary&quot;</span>)]
+  <span class="k">def</span> <span class="m">initialize</span>(input : <span class="t">String</span>, primary_db : <span class="t">DbService</span>, default_db : <span class="t">DbService</span>)
+  <span class="k">end</span>
+<span class="k">end</span></code></pre>
+
+<h3><a id="resolving-manually" class="anchor" href="#resolving-manually">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>Resolving Manually 🔨</h3>
+
+<p>You can resolve dependencies manually using the <code>.resolve</code> macro. This allows you to resolve dependencies manually with the tag string.</p>
+
+<pre><code class="language-crystal"><span class="k">module</span> <span class="t">Container</span>
+  <span class="k">include</span> <span class="t">HardWire</span><span class="t">::</span><span class="t">Container</span>
+
+  transient <span class="t">SecretService</span>, <span class="s">&quot;primary&quot;</span>
+  singleton <span class="t">DatabaseThing</span>
+<span class="k">end</span>
+
+service <span class="o">=</span> <span class="t">Container</span>.resolve <span class="t">SecretService</span>, <span class="s">&quot;primary&quot;</span>
+db <span class="o">=</span> <span class="t">Container</span>.resolve <span class="t">DatabaseThing</span></code></pre>
+
+<h3><a id="runtime-interrogation" class="anchor" href="#runtime-interrogation">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>Runtime Interrogation 👀</h3>
+
+<p>Hardwire can tell you information about the registrations at runtime, but the dependencies are <em>HardWired</em> (See what I did there?), so they can't be changed.</p>
+
+<pre><code class="language-crystal"><span class="k">module</span> <span class="t">Container</span>
+  <span class="k">include</span> <span class="t">HardWire</span><span class="t">::</span><span class="t">Container</span>
+
+  singleton <span class="t">DbService</span>
+<span class="k">end</span>
+
+<span class="t">Container</span>.registered?(<span class="t">DbService</span>) <span class="c"># true</span>
+<span class="t">Container</span>.registered?(<span class="t">DbService</span>, <span class="s">&quot;tagged&quot;</span>) <span class="c"># false</span>
+<span class="t">Container</span>.registered?(<span class="t">String</span>) <span class="c"># false</span></code></pre>
+
+<h2><a id="contributing" class="anchor" href="#contributing">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>Contributing</h2>
+
+<ol><li>Fork it (&lt;https://github.com/jerometwell/hardwire/fork>)</li><li>Create your feature branch (<code>git checkout -b my-new-feature</code>)</li><li>Commit your changes (<code>git commit -am 'Add some feature'</code>)</li><li>Push to the branch (<code>git push origin my-new-feature</code>)</li><li>Create a new Pull Request</li></ol>
+
+<h2><a id="contributors" class="anchor" href="#contributors">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>Contributors</h2>
+
+<ul><li><a href="https://github.com/jerometwell">Jerome Twell</a> - creator and maintainer</li></ul>
+</div>
+</body>
+</html>
