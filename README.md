@@ -1,5 +1,5 @@
 # HardWire ⚡
-[![Crystal CI](https://github.com/jerometwell/hardwire/workflows/Crystal%20CI/badge.svg?branch=master)](https://github.com/jerometwell/hardwire/actions?query=workflow%3A%22Crystal+CI%22)
+[![Crystal CI](https://github.com/rwnx/hardwire/workflows/Crystal%20CI/badge.svg?branch=master)](https://github.com/jerometwell/hardwire/actions?query=workflow%3A%22Crystal+CI%22)
 
 A Compile-time Dependency Injection system for Crystal.
 
@@ -10,7 +10,7 @@ A Compile-time Dependency Injection system for Crystal.
 ```yaml
 dependencies:
   hardwire:
-    github: jerometwell/hardwire
+    github: rwnx/hardwire
 ```
 
 2. Run `shards install`
@@ -134,7 +134,7 @@ Container.registered?(String) # false
 
 ## Contributing
 
-1. Fork it (<https://github.com/jerometwell/hardwire/fork>)
+1. Fork it (<https://github.com/rwnx/hardwire/fork>)
 2. Create your feature branch (`git checkout -b my-new-feature`)
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
@@ -142,4 +142,4 @@ Container.registered?(String) # false
 
 ## Contributors
 
-- [Jerome Twell](https://github.com/jerometwell) - creator and maintainer
+- [rwnx](https://github.com/rwnx) - creator and maintainer
