@@ -41,6 +41,9 @@ module HardWire
   #   include Hardwire::Container
   # end
   # ```
+
+  class TagClass; end
+
   module Container
     macro included
       # Store all registrations, which are mainly used to give nice errors for duplicate registrations
@@ -85,6 +88,20 @@ module HardWire
         transient({{path}}) {{block}}
       end
 
+      # Register a contextis dependency.
+      macro contextis(path, tags = nil, &block)
+        {% if block %}
+          register {{path}}, :contextis, {{tags}} {{block}}
+        {% else %}
+          register {{path}}, :contextis, {{tags}}
+        {% end %}
+      end
+
+      # Register a contextis dependency.
+      macro contextis(path, &block)
+        contextis({{path}}) {{block}} 
+      end
+
       # Register a singleton dependency.
       macro singleton(path, tags = nil, &block)
         {% if block %}
@@ -96,7 +113,7 @@ module HardWire
 
       # Register a singleton dependency.
       macro singleton(path, &block)
-          singleton({{path}}) {{block}}
+        singleton({{path}}) {{block}}
       end
 
       # Create a new registration from the passed type, lifecycle, and tags
@@ -125,7 +142,7 @@ module HardWire
         {% register_type_safe = register_type.stringify.gsub(/[^\w]/, "_") %}
         {% register_tag_type = "Tags::#{register_tag.upcase.id}" %}
 
-        {% if ![:singleton, :transient].includes? lifecycle %}
+        {% if ![:singleton, :contextis, :transient].includes? lifecycle %}
           {% raise "Unknown Lifecycle #{lifecycle}" %}
         {% end %}
 
@@ -134,11 +151,19 @@ module HardWire
         {% end %}
 
         # Declare a tag as a namespaced class: Tags::TAGNAME
-        class {{register_tag_type.id}}; end
+        class {{register_tag_type.id}} < HardWire::TagClass; end
 
         # Pre-declare singleton classvar if required (ambiguous block return types require this)
         {% if lifecycle == :singleton %}
           @@{{register_type_safe.id}}_{{register_tag.id}} : {{register_type.id}}?
+        {% elsif lifecycle == :contextis %}
+          class {{register_tag_type.id}}
+            property _{{register_type_safe.id}}_{{register_tag.id}} : {{register_type.id}}?
+            def self.instance
+              Fiber.current.hard_wired[:{{"#{register_tag_type.id}"}}] ||= {{register_tag_type.id}}.new
+              Fiber.current.hard_wired[:{{"#{register_tag_type.id}"}}].as({{register_tag_type.id}})
+            end
+          end
         {% end %}
 
         # Define a resolve! method that instantiates the dependency that's being registered,
@@ -147,6 +172,8 @@ module HardWire
           # Singletons: memoize to class var
           {% if lifecycle == :singleton %}
             @@{{register_type_safe.id}}_{{register_tag.id}} ||=
+          {% elsif lifecycle == :contextis %}
+            {{register_tag_type.id}}.instance._{{register_type_safe.id}}_{{register_tag.id}} ||=
           {% end %}
 
           {% if block %}
@@ -206,4 +233,8 @@ module HardWire
   module Root
     include Container
   end
+end
+
+class Fiber
+  property hard_wired = Hash(Symbol, HardWire::TagClass).new
 end
