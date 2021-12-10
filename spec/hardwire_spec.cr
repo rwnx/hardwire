@@ -6,6 +6,8 @@ class Service2; end
 
 class Deep::Nested::Item; end
 
+class MixedService; end
+
 class ChildService
   @@instances = 0
 
@@ -64,6 +66,8 @@ module BasicContainer
   singleton(Service2) {
     Service2.new
   }
+
+  contextis MixedService
 end
 
 module SecondContainer
@@ -140,6 +144,16 @@ describe HardWire do
 
       it "should resolve a dependency in an alternate scope" do
         Deep::Nested::Container.resolve DifferentScopedThing
+      end
+
+      it "should be different in another fiber" do
+        contextis1 = BasicContainer.resolve MixedService
+        contextis2 = BasicContainer.resolve MixedService
+        contextis2.should eq contextis1
+        spawn do
+          contextis3 = BasicContainer.resolve MixedService
+          contextis3.should_not eq contextis2
+        end
       end
     end
   end
