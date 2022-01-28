@@ -126,16 +126,17 @@ describe HardWire do
       end
 
       it "should memoize singletons" do
+        # an singleton resolved here should be the same one resolved internally
         app = BasicContainer.resolve Application
 
-        app.singleton1.should eq app.singleton2
+        app.singleton1.should be app.singleton2
       end
 
       it "should NOT memoize transients" do
         transient1 = BasicContainer.resolve ChildService
         transient2 = BasicContainer.resolve ChildService
 
-        transient1.should_not eq transient2
+        transient1.should_not be transient2
       end
 
       it "should resolve a dependency in an alternate scope" do
@@ -144,3 +145,4 @@ describe HardWire do
     end
   end
 end
+

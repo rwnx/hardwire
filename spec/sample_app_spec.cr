@@ -10,7 +10,7 @@ module SampleContainer
 end
 
 describe "SampleApp" do
-  it "should be able to resolve a dependency in another scope" do
+  it "should be able to resolve a dependency in another module scope" do
     SampleContainer.resolve SampleApp::Application
   end
 end

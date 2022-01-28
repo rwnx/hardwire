@@ -1,5 +1,5 @@
 # HardWire ⚡
-[![Crystal CI](https://github.com/jerometwell/hardwire/workflows/Crystal%20CI/badge.svg?branch=master)](https://github.com/jerometwell/hardwire/actions?query=workflow%3A%22Crystal+CI%22)
+[![Crystal CI](https://github.com/rwnx/hardwire/workflows/Crystal%20CI/badge.svg?branch=master)](https://github.com/rwnx/hardwire/actions?query=workflow%3A%22Crystal+CI%22)
 
 A Compile-time Dependency Injection system for Crystal.
 
@@ -10,7 +10,7 @@ A Compile-time Dependency Injection system for Crystal.
 ```yaml
 dependencies:
   hardwire:
-    github: jerometwell/hardwire
+    github: rwnx/hardwire
 ```
 
 2. Run `shards install`
@@ -36,6 +36,7 @@ module Container
   # dependencies for the constructor will be resolved from the constructor automatically
   transient Dependency
   singleton NeedsDependency
+  scoped Webservice
 
   # you can also register dependencies with a block instead of inspecting the constructor
   # Your block MUST return an instance of the class you are registering
@@ -101,6 +102,46 @@ class Resolving
   end
 end
 ```
+### Lifecycles ♽
+There are 3 lifecycles available for registrations:
+* Singleton: The dependency is instantiated once for the lifetime of the application
+* Scoped: the dependency instantiated once for each created scope and destroyed when the scope is garbage-collected
+* Transient: the dependency is instatiated each time it is resolved
+
+#### Scopes 🔭
+To managed scoped instances, you should create a scope object with the `.scope` macro.
+
+```crystal
+# This example will init a database DatabaseConnection for each http request
+# but all the databases will recieve the same instance of config (singleton)
+# the ScopedLogging dependency will also be instantiated once for each scope resolution
+require "kemal"
+class Config; end
+class ScopedLogging; end
+class DatabaseConnection
+  def initialize(@config : Config, @logging : ScopedLogging)
+  end
+end
+
+module Container
+  include HardWire::Container
+
+  singleton Config
+  scoped ScopedLogging
+  scoped DatabaseConnection
+end
+
+
+get "/" do
+  # create a unique scope
+  scope = Container.scope
+  db = scope.resolve DatabaseConnection
+  db.get_some_data
+end
+
+Kemal.run
+
+```
 
 ### Resolving Manually 🔨
 You can resolve dependencies manually using the `.resolve` macro. This allows you to resolve dependencies manually with the tag string.
@@ -134,7 +175,7 @@ Container.registered?(String) # false
 
 ## Contributing
 
-1. Fork it (<https://github.com/jerometwell/hardwire/fork>)
+1. Fork it (<https://github.com/rwnx/hardwire/fork>)
 2. Create your feature branch (`git checkout -b my-new-feature`)
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
@@ -142,4 +183,4 @@ Container.registered?(String) # false
 
 ## Contributors
 
-- [Jerome Twell](https://github.com/jerometwell) - creator and maintainer
+- [rwnx](https://github.com/rwnx) - creator and maintainer
