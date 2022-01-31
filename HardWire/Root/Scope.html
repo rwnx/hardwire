@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="generator" content="Crystal Docs 1.2.2">
+<meta name="crystal_docs.project_version" content="HEAD">
+<meta name="crystal_docs.project_name" content="hardwire">
+
+
+
+<link href="../../css/style.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="../../js/doc.js"></script>
+
+  <meta name="repository-name" content="hardwire">
+  <title>HardWire::Root::Scope - hardwire HEAD</title>
+  <script type="text/javascript">
+    CrystalDocs.base_path = "../../";
+  </script>
+</head>
+<body>
+
+<svg class="hidden">
+  <symbol id="octicon-link" viewBox="0 0 16 16">
+    <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path>
+  </symbol>
+</svg>
+<div class="sidebar">
+  <div class="sidebar-header">
+    <div class="search-box">
+      <input type="search" class="search-input" placeholder="Search..." spellcheck="false" aria-label="Search">
+    </div>
+
+    <div class="project-summary">
+      <h1 class="project-name">
+        <a href="../../index.html">
+          hardwire
+        </a>
+      </h1>
+
+      <span class="project-version">
+        HEAD
+      </span>
+    </div>
+  </div>
+
+  <div class="search-results hidden">
+    <ul class="search-list"></ul>
+  </div>
+
+  <div class="types-list">
+    <ul>
+  
+  <li class="parent open current" data-id="hardwire/HardWire" data-name="hardwire">
+      <a href="../../HardWire.html">HardWire</a>
+      
+        <ul>
+  
+  <li class=" " data-id="hardwire/HardWire/Container" data-name="hardwire::container">
+      <a href="../../HardWire/Container.html">Container</a>
+      
+    </li>
+  
+  <li class=" " data-id="hardwire/HardWire/Inject" data-name="hardwire::inject">
+      <a href="../../HardWire/Inject.html">Inject</a>
+      
+    </li>
+  
+  <li class="parent open current" data-id="hardwire/HardWire/Root" data-name="hardwire::root">
+      <a href="../../HardWire/Root.html">Root</a>
+      
+        <ul>
+  
+  <li class=" current" data-id="hardwire/HardWire/Root/Scope" data-name="hardwire::root::scope">
+      <a href="../../HardWire/Root/Scope.html">Scope</a>
+      
+    </li>
+  
+  <li class=" " data-id="hardwire/HardWire/Root/Tags" data-name="hardwire::root::tags">
+      <a href="../../HardWire/Root/Tags.html">Tags</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="hardwire/HardWire/Tags" data-name="hardwire::tags">
+      <a href="../../HardWire/Tags.html">Tags</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+</ul>
+
+  </div>
+</div>
+
+
+<div class="main-content">
+<h1 class="type-name">
+
+  <span class="kind">class</span> HardWire::Root::Scope
+
+</h1>
+
+
+  <ul class="superclass-hierarchy"><li class="superclass"><a href="../../HardWire/Root/Scope.html">HardWire::Root::Scope</a></li><li class="superclass">Reference</li><li class="superclass">Object</li></ul>
+
+
+
+
+  <h2>
+    <a id="overview" class="anchor" href="#overview">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>
+    Overview
+  </h2>
+
+  <p>A Scope is an object that represents the a scope's lifecycle, as a helper class for accessing scoped resolution
+and also providing a lifecycle hook to destroy/garbage collect the scoped instances</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <h2>
+    <a id="defined-in" class="anchor" href="#defined-in">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>
+    Defined in:
+  </h2>
+  
+    
+      <a href="https://github.com/rwnx/hardwire/blob/a74778fe74e33ed5a023168f3d5ba75fe4fdb5f0/src/hardwire.cr#L316" target="_blank">
+        hardwire.cr
+      </a>
+    
+    <br/>
+  
+
+
+
+
+
+  <h2>
+    <a id="constructors" class="anchor" href="#constructors">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>
+    Constructors
+  </h2>
+  <ul class="list-summary">
+    
+      <li class="entry-summary">
+        <a href="#new%28name%3AString%29-class-method" class="signature"><strong>.new</strong>(name : String)</a>
+        
+      </li>
+    
+  </ul>
+
+
+
+
+
+  <h2>
+    <a id="instance-method-summary" class="anchor" href="#instance-method-summary">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>
+    Instance Method Summary
+  </h2>
+  <ul class="list-summary">
+    
+      <li class="entry-summary">
+        <a href="#destroy-instance-method" class="signature"><strong>#destroy</strong></a>
+        
+          <div class="summary"><p>Destroy the represented scope and release the instances for garbage collection NOTE: this will be called when the scope itself is garbage-collected</p></div>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#finalize-instance-method" class="signature"><strong>#finalize</strong></a>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#name%3AString-instance-method" class="signature"><strong>#name</strong> : String</a>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#resolve%28target%3AClass%2Ctag%3D%22default%22%29-instance-method" class="signature"><strong>#resolve</strong>(target : Class, tag = <span class="s">&quot;default&quot;</span>)</a>
+        
+          <div class="summary"><p>Resolve a dependency from the represented scope</p></div>
+        
+      </li>
+    
+  </ul>
+
+
+
+
+
+<div class="methods-inherited">
+  
+    
+
+
+    
+
+
+    
+
+
+  
+    
+
+
+    
+
+
+    
+
+
+  
+</div>
+
+
+  <h2>
+    <a id="constructor-detail" class="anchor" href="#constructor-detail">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>
+    Constructor Detail
+  </h2>
+  
+    <div class="entry-detail" id="new(name:String)-class-method">
+      <div class="signature">
+        
+        def self.<strong>new</strong>(name : String)
+
+        <a class="method-permalink" href="#new%28name%3AString%29-class-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/rwnx/hardwire/blob/a74778fe74e33ed5a023168f3d5ba75fe4fdb5f0/src/hardwire.cr#L316" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+
+
+
+
+
+  <h2>
+    <a id="instance-method-detail" class="anchor" href="#instance-method-detail">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>
+    Instance Method Detail
+  </h2>
+  
+    <div class="entry-detail" id="destroy-instance-method">
+      <div class="signature">
+        
+        def <strong>destroy</strong>
+
+        <a class="method-permalink" href="#destroy-instance-method">#</a>
+      </div>
+      
+        <div class="doc">
+          
+          <p>Destroy the represented scope and release the instances for garbage collection</p>
+<p><span class="flag purple">NOTE</span>  this will be called when the scope itself is garbage-collected</p>
+        </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/rwnx/hardwire/blob/a74778fe74e33ed5a023168f3d5ba75fe4fdb5f0/src/hardwire.cr#L316" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="finalize-instance-method">
+      <div class="signature">
+        
+        def <strong>finalize</strong>
+
+        <a class="method-permalink" href="#finalize-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/rwnx/hardwire/blob/a74778fe74e33ed5a023168f3d5ba75fe4fdb5f0/src/hardwire.cr#L316" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="name:String-instance-method">
+      <div class="signature">
+        
+        def <strong>name</strong> : String
+
+        <a class="method-permalink" href="#name%3AString-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="resolve(target:Class,tag=&quot;default&quot;)-instance-method">
+      <div class="signature">
+        
+        def <strong>resolve</strong>(target : Class, tag = <span class="s">&quot;default&quot;</span>)
+
+        <a class="method-permalink" href="#resolve%28target%3AClass%2Ctag%3D%22default%22%29-instance-method">#</a>
+      </div>
+      
+        <div class="doc">
+          
+          <p>Resolve a dependency from the represented scope</p>
+        </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/rwnx/hardwire/blob/a74778fe74e33ed5a023168f3d5ba75fe4fdb5f0/src/hardwire.cr#L316" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+
+
+
+
+</div>
+
+</body>
+</html>

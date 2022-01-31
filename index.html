@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="generator" content="Crystal Docs 0.36.1">
+<meta name="generator" content="Crystal Docs 1.2.2">
 <meta name="crystal_docs.project_version" content="HEAD">
 <meta name="crystal_docs.project_name" content="hardwire">
 
@@ -71,6 +71,11 @@
       
         <ul>
   
+  <li class=" " data-id="hardwire/HardWire/Root/Scope" data-name="hardwire::root::scope">
+      <a href="HardWire/Root/Scope.html">Scope</a>
+      
+    </li>
+  
   <li class=" " data-id="hardwire/HardWire/Root/Tags" data-name="hardwire::root::tags">
       <a href="HardWire/Root/Tags.html">Tags</a>
       
@@ -98,47 +103,39 @@
 
 
 <div class="main-content">
-<h1><a id="hard-wire" class="anchor" href="#hard-wire">
-  <svg class="octicon-link" aria-hidden="true">
+<h1><a id="hard-wire" class="anchor" href="#hard-wire">  <svg class="octicon-link" aria-hidden="true">
     <use href="#octicon-link"/>
   </svg>
 </a>HardWire ⚡</h1>
-
-<p><a href="https://github.com/jerometwell/hardwire/actions?query=workflow%3A%22Crystal+CI%22"><img src="https://github.com/jerometwell/hardwire/workflows/Crystal%20CI/badge.svg?branch=master" alt="Crystal CI"/></a></p>
-
+<p><a href="https://github.com/rwnx/hardwire/actions?query=workflow:%22Crystal+CI%22"><img src="https://github.com/rwnx/hardwire/workflows/Crystal%20CI/badge.svg?branch=master" alt="Crystal CI" /></a></p>
 <p>A Compile-time Dependency Injection system for Crystal.</p>
-
 <h2><a id="installation" class="anchor" href="#installation">
   <svg class="octicon-link" aria-hidden="true">
     <use href="#octicon-link"/>
   </svg>
 </a>Installation</h2>
-
-<ol><li>Add the dependency to your <code>shard.yml</code>:</li></ol>
-
+<ol>
+<li>Add the dependency to your <code>shard.yml</code>:</li>
+</ol>
 <pre><code class="language-yaml">dependencies:
   hardwire:
-    github: jerometwell/hardwire</code></pre>
-
-<ol><li>Run <code>shards install</code></li></ol>
-
+    github: rwnx/hardwire</code></pre>
+<ol start="2">
+<li>Run <code>shards install</code></li>
+</ol>
 <h2><a id="usage" class="anchor" href="#usage">
   <svg class="octicon-link" aria-hidden="true">
     <use href="#octicon-link"/>
   </svg>
 </a>Usage</h2>
-
 <pre><code class="language-crystal"><span class="k">require</span> <span class="s">&quot;hardwire&quot;</span></code></pre>
-
 <p>Hardwire is designed to operate inside a container object.
 Since the resolution is compile-time (Using Macros), normally this will be a module.</p>
-
 <h3><a id="creating-a-container" class="anchor" href="#creating-a-container">
   <svg class="octicon-link" aria-hidden="true">
     <use href="#octicon-link"/>
   </svg>
 </a>Creating a container 📦</h3>
-
 <pre><code class="language-crystal"><span class="c"># To create a new container, include `HardWire::Container`</span>
 <span class="c"># This will add the macros you need to register and resolve wiring</span>
 <span class="k">module</span> <span class="t">Container</span>
@@ -149,6 +146,7 @@ Since the resolution is compile-time (Using Macros), normally this will be a mod
   <span class="c"># dependencies for the constructor will be resolved from the constructor automatically</span>
   transient <span class="t">Dependency</span>
   singleton <span class="t">NeedsDependency</span>
+  scoped <span class="t">Webservice</span>
 
   <span class="c"># you can also register dependencies with a block instead of inspecting the constructor</span>
   <span class="c"># Your block MUST return an instance of the class you are registering</span>
@@ -156,26 +154,21 @@ Since the resolution is compile-time (Using Macros), normally this will be a mod
     <span class="t">NeedsDependency</span>.<span class="k">new</span>( <span class="k">self</span>.resolve <span class="t">Dependency</span> )
   }
 <span class="k">end</span></code></pre>
-
 <p>Hardwire tries to operate with minimal modifications to other classes (unless required).
-<em>"simple"</em> classes, e.g.</p>
-
-<ul><li>Have a single constructor</li><li>Have unique dependencies/do not require tags</li></ul></ul>
-
+<em>&quot;simple&quot;</em> classes, e.g.</p>
+<ul>
+<li>Have a single constructor</li>
+<li>Have unique dependencies/do not require tags</li>
+</ul>
 <p>If your classes match this signature, you can wire up in the container without adding anything to the classes.</p>
-
 <p>For everything else, there's:</p>
-
 <h3><a id="multiple-constructors" class="anchor" href="#multiple-constructors">
   <svg class="octicon-link" aria-hidden="true">
     <use href="#octicon-link"/>
   </svg>
 </a>Multiple Constructors 🚧</h3>
-
 <p>Hardwire needs to know which constuctor function to use.</p>
-
-<p>Annotate your "Injectable" constructor with the Hardwire::Inject annotation.</p>
-
+<p>Annotate your &quot;Injectable&quot; constructor with the Hardwire::Inject annotation.</p>
 <pre><code class="language-crystal"><span class="k">class</span> <span class="t">MultipleInits</span>
   @[<span class="t">HardWire</span><span class="t">::</span><span class="t">Inject</span>]
   <span class="k">def</span> <span class="m">initialize</span>(input: <span class="t">String</span>)
@@ -188,17 +181,14 @@ Since the resolution is compile-time (Using Macros), normally this will be a mod
     <span class="c"># [...]</span>
   <span class="k">end</span>
 <span class="k">end</span></code></pre>
-
 <h3><a id="tags" class="anchor" href="#tags">
   <svg class="octicon-link" aria-hidden="true">
     <use href="#octicon-link"/>
   </svg>
 </a>Tags 🏷</h3>
-
 <p>To differentiate between registrations of <em>the same type</em>, use the HardWire::Tags annotation.
 Tags allow you to attach additional metadata to the signature. Tags themselves are string-based, simple identifiers (/\w+/) that allow you to resolve
 a different registration of the same class.</p>
-
 <pre><code class="language-crystal"><span class="c"># [...]</span>
 
 <span class="c"># registering a transient dependency with tag &quot;secret&quot;</span>
@@ -219,15 +209,62 @@ singleton <span class="t">DbService</span>, <span class="s">&quot;primary&quot;<
   <span class="k">def</span> <span class="m">initialize</span>(input : <span class="t">String</span>, primary_db : <span class="t">DbService</span>, default_db : <span class="t">DbService</span>)
   <span class="k">end</span>
 <span class="k">end</span></code></pre>
+<h3><a id="lifecycles" class="anchor" href="#lifecycles">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>Lifecycles ♽</h3>
+<p>There are 3 lifecycles available for registrations:</p>
+<ul>
+<li>Singleton: The dependency is instantiated once for the lifetime of the application</li>
+<li>Scoped: the dependency instantiated once for each created scope and destroyed when the scope is garbage-collected</li>
+<li>Transient: the dependency is instatiated each time it is resolved</li>
+</ul>
+<h4><a id="scopes" class="anchor" href="#scopes">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>Scopes 🔭</h4>
+<p>To managed scoped instances, you should create a scope object with the <code>.scope</code> macro.</p>
+<pre><code class="language-crystal"><span class="c"># This example will init a database DatabaseConnection for each http request</span>
+<span class="c"># but all the databases will recieve the same instance of config (singleton)</span>
+<span class="c"># the ScopedLogging dependency will also be instantiated once for each scope resolution</span>
+<span class="k">require</span> <span class="s">&quot;kemal&quot;</span>
+<span class="k">class</span> <span class="t">Config</span>; <span class="k">end</span>
+<span class="k">class</span> <span class="t">ScopedLogging</span>; <span class="k">end</span>
+<span class="k">class</span> <span class="t">DatabaseConnection</span>
+  <span class="k">def</span> <span class="m">initialize</span>(@config : <span class="t">Config</span>, @logging : <span class="t">ScopedLogging</span>)
+  <span class="k">end</span>
+<span class="k">end</span>
 
+<span class="k">module</span> <span class="t">Container</span>
+  <span class="k">include</span> <span class="t">HardWire</span><span class="t">::</span><span class="t">Container</span>
+
+  singleton <span class="t">Config</span>
+  scoped <span class="t">ScopedLogging</span>
+  scoped <span class="t">DatabaseConnection</span>
+<span class="k">end</span>
+
+
+get <span class="s">&quot;/&quot;</span> <span class="k">do</span>
+  <span class="c"># create a unique scope</span>
+  scope <span class="o">=</span> <span class="t">Container</span>.scope
+
+  logger <span class="o">=</span> scope.resolve <span class="t">ScopedLogging</span>
+  db <span class="o">=</span> scope.resolve <span class="t">DatabaseConnection</span>
+  db.get_some_data
+
+  logger.log(<span class="s">&quot;I share a logger with the database in scope!&quot;</span>)
+<span class="k">end</span>
+
+<span class="t">Kemal</span>.run
+</code></pre>
 <h3><a id="resolving-manually" class="anchor" href="#resolving-manually">
   <svg class="octicon-link" aria-hidden="true">
     <use href="#octicon-link"/>
   </svg>
 </a>Resolving Manually 🔨</h3>
-
 <p>You can resolve dependencies manually using the <code>.resolve</code> macro. This allows you to resolve dependencies manually with the tag string.</p>
-
 <pre><code class="language-crystal"><span class="k">module</span> <span class="t">Container</span>
   <span class="k">include</span> <span class="t">HardWire</span><span class="t">::</span><span class="t">Container</span>
 
@@ -237,15 +274,12 @@ singleton <span class="t">DbService</span>, <span class="s">&quot;primary&quot;<
 
 service <span class="o">=</span> <span class="t">Container</span>.resolve <span class="t">SecretService</span>, <span class="s">&quot;primary&quot;</span>
 db <span class="o">=</span> <span class="t">Container</span>.resolve <span class="t">DatabaseThing</span></code></pre>
-
 <h3><a id="runtime-interrogation" class="anchor" href="#runtime-interrogation">
   <svg class="octicon-link" aria-hidden="true">
     <use href="#octicon-link"/>
   </svg>
 </a>Runtime Interrogation 👀</h3>
-
 <p>Hardwire can tell you information about the registrations at runtime, but the dependencies are <em>HardWired</em> (See what I did there?), so they can't be changed.</p>
-
 <pre><code class="language-crystal"><span class="k">module</span> <span class="t">Container</span>
   <span class="k">include</span> <span class="t">HardWire</span><span class="t">::</span><span class="t">Container</span>
 
@@ -255,22 +289,26 @@ db <span class="o">=</span> <span class="t">Container</span>.resolve <span class
 <span class="t">Container</span>.registered?(<span class="t">DbService</span>) <span class="c"># true</span>
 <span class="t">Container</span>.registered?(<span class="t">DbService</span>, <span class="s">&quot;tagged&quot;</span>) <span class="c"># false</span>
 <span class="t">Container</span>.registered?(<span class="t">String</span>) <span class="c"># false</span></code></pre>
-
 <h2><a id="contributing" class="anchor" href="#contributing">
   <svg class="octicon-link" aria-hidden="true">
     <use href="#octicon-link"/>
   </svg>
 </a>Contributing</h2>
-
-<ol><li>Fork it (&lt;https://github.com/jerometwell/hardwire/fork>)</li><li>Create your feature branch (<code>git checkout -b my-new-feature</code>)</li><li>Commit your changes (<code>git commit -am 'Add some feature'</code>)</li><li>Push to the branch (<code>git push origin my-new-feature</code>)</li><li>Create a new Pull Request</li></ol>
-
+<ol>
+<li>Fork it (<a href="https://github.com/rwnx/hardwire/fork">https://github.com/rwnx/hardwire/fork</a>)</li>
+<li>Create your feature branch (<code>git checkout -b my-new-feature</code>)</li>
+<li>Commit your changes (<code>git commit -am 'Add some feature'</code>)</li>
+<li>Push to the branch (<code>git push origin my-new-feature</code>)</li>
+<li>Create a new Pull Request</li>
+</ol>
 <h2><a id="contributors" class="anchor" href="#contributors">
   <svg class="octicon-link" aria-hidden="true">
     <use href="#octicon-link"/>
   </svg>
 </a>Contributors</h2>
-
-<ul><li><a href="https://github.com/jerometwell">Jerome Twell</a> - creator and maintainer</li></ul>
+<ul>
+<li><a href="https://github.com/rwnx">rwnx</a> - creator and maintainer</li>
+</ul>
 </div>
 </body>
 </html>

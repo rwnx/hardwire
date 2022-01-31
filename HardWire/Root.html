@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="generator" content="Crystal Docs 0.36.1">
+<meta name="generator" content="Crystal Docs 1.2.2">
 <meta name="crystal_docs.project_version" content="HEAD">
 <meta name="crystal_docs.project_name" content="hardwire">
 
@@ -71,6 +71,11 @@
       
         <ul>
   
+  <li class=" " data-id="hardwire/HardWire/Root/Scope" data-name="hardwire::root::scope">
+      <a href="../HardWire/Root/Scope.html">Scope</a>
+      
+    </li>
+  
   <li class=" " data-id="hardwire/HardWire/Root/Tags" data-name="hardwire::root::tags">
       <a href="../HardWire/Root/Tags.html">Tags</a>
       
@@ -118,7 +123,6 @@
   </h2>
 
   <p>A pre-made Container, designed to provide a concrete in-namespace module to generate documentation from.</p>
-
 <p><span class="flag purple">NOTE</span>  All of the methods in this library are designed to operate <em>inside</em> the container class,
 so you cannot use this container for actual dependency injection</p>
 
@@ -159,7 +163,7 @@ so you cannot use this container for actual dependency injection</p>
   </h2>
   
     
-      <a href="https://github.com/jerometwell/hardwire/blob/28c75f18f20967daaf929a092dfdcf0092c733c8/src/hardwire.cr#L206" target="_blank">
+      <a href="https://github.com/rwnx/hardwire/blob/a74778fe74e33ed5a023168f3d5ba75fe4fdb5f0/src/hardwire.cr#L315" target="_blank">
         hardwire.cr
       </a>
     
@@ -181,12 +185,11 @@ so you cannot use this container for actual dependency injection</p>
   <dl>
     
       <dt class="entry-const" id="REGISTRATIONS">
-        <strong>REGISTRATIONS</strong> = <code><span class="o">[]</span> <span class="k">of</span> <span class="t">Tuple</span>(<span class="t">String</span>, <span class="t">String</span>)</code>
+        <strong>REGISTRATIONS</strong> = <code><span class="o">[]</span> <span class="k">of</span> <span class="t">NamedTuple</span>(<span class="k">type</span>: <span class="t">String</span>, tag: <span class="t">String</span>, lifecycle: <span class="t">Symbol</span>)</code>
       </dt>
       
       <dd class="entry-const-doc">
         <p>Store all registrations, which are mainly used to give nice errors for duplicate registrations</p>
-
 <p>Users can also run their own checks at runtime for length, structure, etc.</p>
       </dd>
       
@@ -208,7 +211,7 @@ so you cannot use this container for actual dependency injection</p>
   <ul class="list-summary">
     
       <li class="entry-summary">
-        <a href="#registered?(target:Class,tag=&quot;default&quot;):Bool-class-method" class="signature"><strong>.registered?</strong>(target : Class, tag = <span class="s">&quot;default&quot;</span>) : Bool</a>
+        <a href="#registered%3F%28target%3AClass%2Ctag%3D%22default%22%29%3ABool-class-method" class="signature"><strong>.registered?</strong>(target : Class, tag = <span class="s">&quot;default&quot;</span>) : Bool</a>
         
           <div class="summary"><p>Interrogate the container for a registration</p></div>
         
@@ -231,35 +234,63 @@ so you cannot use this container for actual dependency injection</p>
   <ul class="list-summary">
     
       <li class="entry-summary">
-        <a href="#resolve(target,tag=&quot;default&quot;)-macro" class="signature"><strong>resolve</strong>(target, tag = <span class="s">&quot;default&quot;</span>)</a>
+        <a href="#resolve%28target%2Ctag%3D%22default%22%29-macro" class="signature"><strong>resolve</strong>(target, tag = <span class="s">&quot;default&quot;</span>)</a>
         
           <div class="summary"><p>Resolve a dependency from a class and a string tag</p></div>
         
       </li>
     
       <li class="entry-summary">
-        <a href="#singleton(path,tags=nil,&block)-macro" class="signature"><strong>singleton</strong>(path, tags = <span class="n">nil</span>, &block)</a>
+        <a href="#scope%28name%29-macro" class="signature"><strong>scope</strong>(name)</a>
+        
+          <div class="summary"><p>create a new scope with the specified name</p></div>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#scope-macro" class="signature"><strong>scope</strong></a>
+        
+          <div class="summary"><p>Create a new scope with a randomly chosen unique ID</p></div>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#scoped%28path%2Ctag%3Dnil%2C%26block%29-macro" class="signature"><strong>scoped</strong>(path, tag = <span class="n">nil</span>, &block)</a>
+        
+          <div class="summary"><p>Register a scoped dependency.</p></div>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#scoped%28path%2C%26block%29-macro" class="signature"><strong>scoped</strong>(path, &block)</a>
         
           <div class="summary"><p>Register a singleton dependency.</p></div>
         
       </li>
     
       <li class="entry-summary">
-        <a href="#singleton(path,&block)-macro" class="signature"><strong>singleton</strong>(path, &block)</a>
+        <a href="#singleton%28path%2Ctag%3Dnil%2C%26block%29-macro" class="signature"><strong>singleton</strong>(path, tag = <span class="n">nil</span>, &block)</a>
         
           <div class="summary"><p>Register a singleton dependency.</p></div>
         
       </li>
     
       <li class="entry-summary">
-        <a href="#transient(path,tags=nil,&block)-macro" class="signature"><strong>transient</strong>(path, tags = <span class="n">nil</span>, &block)</a>
+        <a href="#singleton%28path%2C%26block%29-macro" class="signature"><strong>singleton</strong>(path, &block)</a>
+        
+          <div class="summary"><p>Register a singleton dependency.</p></div>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#transient%28path%2Ctag%3Dnil%2C%26block%29-macro" class="signature"><strong>transient</strong>(path, tag = <span class="n">nil</span>, &block)</a>
         
           <div class="summary"><p>Register a transient dependency.</p></div>
         
       </li>
     
       <li class="entry-summary">
-        <a href="#transient(path,&block)-macro" class="signature"><strong>transient</strong>(path, &block)</a>
+        <a href="#transient%28path%2C%26block%29-macro" class="signature"><strong>transient</strong>(path, &block)</a>
         
           <div class="summary"><p>Register a transient dependency.</p></div>
         
@@ -300,7 +331,7 @@ so you cannot use this container for actual dependency injection</p>
         
         def self.<strong>registered?</strong>(target : Class, tag = <span class="s">&quot;default&quot;</span>) : Bool
 
-        <a class="method-permalink" href="#registered?(target:Class,tag=&quot;default&quot;):Bool-class-method">#</a>
+        <a class="method-permalink" href="#registered%3F%28target%3AClass%2Ctag%3D%22default%22%29%3ABool-class-method">#</a>
       </div>
       
         <div class="doc">
@@ -311,7 +342,7 @@ so you cannot use this container for actual dependency injection</p>
       <br/>
       <div>
         
-          [<a href="https://github.com/jerometwell/hardwire/blob/28c75f18f20967daaf929a092dfdcf0092c733c8/src/hardwire.cr#L207" target="_blank">View source</a>]
+          [<a href="https://github.com/rwnx/hardwire/blob/a74778fe74e33ed5a023168f3d5ba75fe4fdb5f0/src/hardwire.cr#L316" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -330,38 +361,99 @@ so you cannot use this container for actual dependency injection</p>
     Macro Detail
   </h2>
   
-    <div class="entry-detail" id="resolve(target,tag=&amp;quot;default&amp;quot;)-macro">
+    <div class="entry-detail" id="resolve(target,tag=&quot;default&quot;)-macro">
       <div class="signature">
         
         macro <strong>resolve</strong>(target, tag = <span class="s">&quot;default&quot;</span>)
 
-        <a class="method-permalink" href="#resolve(target,tag=&quot;default&quot;)-macro">#</a>
+        <a class="method-permalink" href="#resolve%28target%2Ctag%3D%22default%22%29-macro">#</a>
       </div>
       
         <div class="doc">
           
           <p>Resolve a dependency from a class and a string tag</p>
-
 <p>This macro does the legwork of mangling the dynamic-looking call into the statically-defined <code>resolve!</code> method</p>
-
 <p><span class="flag purple">NOTE</span>  This method does not protect you from unregistered dependencies, since it relies on
-directly resolving the <code>resolve!</code> method. If you need safety - use <code><a href="../HardWire/Root.html#registered?(target:Class,tag=&quot;default&quot;):Bool-class-method">.registered?</a></code></p>
+directly resolving the <code>resolve!</code> method. If you need safety - use <code><a href="../HardWire/Root.html#registered%3F%28target%3AClass%2Ctag%3D%22default%22%29%3ABool-class-method">.registered?</a></code></p>
         </div>
       
       <br/>
       <div>
         
-          [<a href="https://github.com/jerometwell/hardwire/blob/28c75f18f20967daaf929a092dfdcf0092c733c8/src/hardwire.cr#L207" target="_blank">View source</a>]
+          [<a href="https://github.com/rwnx/hardwire/blob/a74778fe74e33ed5a023168f3d5ba75fe4fdb5f0/src/hardwire.cr#L316" target="_blank">View source</a>]
         
       </div>
     </div>
   
-    <div class="entry-detail" id="singleton(path,tags=nil,&amp;block)-macro">
+    <div class="entry-detail" id="scope(name)-macro">
       <div class="signature">
         
-        macro <strong>singleton</strong>(path, tags = <span class="n">nil</span>, &block)
+        macro <strong>scope</strong>(name)
 
-        <a class="method-permalink" href="#singleton(path,tags=nil,&block)-macro">#</a>
+        <a class="method-permalink" href="#scope%28name%29-macro">#</a>
+      </div>
+      
+        <div class="doc">
+          
+          <p>create a new scope with the specified name</p>
+        </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/rwnx/hardwire/blob/a74778fe74e33ed5a023168f3d5ba75fe4fdb5f0/src/hardwire.cr#L316" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="scope-macro">
+      <div class="signature">
+        
+        macro <strong>scope</strong>
+
+        <a class="method-permalink" href="#scope-macro">#</a>
+      </div>
+      
+        <div class="doc">
+          
+          <p>Create a new scope with a randomly chosen unique ID</p>
+        </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/rwnx/hardwire/blob/a74778fe74e33ed5a023168f3d5ba75fe4fdb5f0/src/hardwire.cr#L316" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="scoped(path,tag=nil,&amp;block)-macro">
+      <div class="signature">
+        
+        macro <strong>scoped</strong>(path, tag = <span class="n">nil</span>, &block)
+
+        <a class="method-permalink" href="#scoped%28path%2Ctag%3Dnil%2C%26block%29-macro">#</a>
+      </div>
+      
+        <div class="doc">
+          
+          <p>Register a scoped dependency.</p>
+        </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/rwnx/hardwire/blob/a74778fe74e33ed5a023168f3d5ba75fe4fdb5f0/src/hardwire.cr#L316" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="scoped(path,&amp;block)-macro">
+      <div class="signature">
+        
+        macro <strong>scoped</strong>(path, &block)
+
+        <a class="method-permalink" href="#scoped%28path%2C%26block%29-macro">#</a>
       </div>
       
         <div class="doc">
@@ -372,7 +464,28 @@ directly resolving the <code>resolve!</code> method. If you need safety - use <c
       <br/>
       <div>
         
-          [<a href="https://github.com/jerometwell/hardwire/blob/28c75f18f20967daaf929a092dfdcf0092c733c8/src/hardwire.cr#L207" target="_blank">View source</a>]
+          [<a href="https://github.com/rwnx/hardwire/blob/a74778fe74e33ed5a023168f3d5ba75fe4fdb5f0/src/hardwire.cr#L316" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="singleton(path,tag=nil,&amp;block)-macro">
+      <div class="signature">
+        
+        macro <strong>singleton</strong>(path, tag = <span class="n">nil</span>, &block)
+
+        <a class="method-permalink" href="#singleton%28path%2Ctag%3Dnil%2C%26block%29-macro">#</a>
+      </div>
+      
+        <div class="doc">
+          
+          <p>Register a singleton dependency.</p>
+        </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/rwnx/hardwire/blob/a74778fe74e33ed5a023168f3d5ba75fe4fdb5f0/src/hardwire.cr#L316" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -382,7 +495,7 @@ directly resolving the <code>resolve!</code> method. If you need safety - use <c
         
         macro <strong>singleton</strong>(path, &block)
 
-        <a class="method-permalink" href="#singleton(path,&block)-macro">#</a>
+        <a class="method-permalink" href="#singleton%28path%2C%26block%29-macro">#</a>
       </div>
       
         <div class="doc">
@@ -393,17 +506,17 @@ directly resolving the <code>resolve!</code> method. If you need safety - use <c
       <br/>
       <div>
         
-          [<a href="https://github.com/jerometwell/hardwire/blob/28c75f18f20967daaf929a092dfdcf0092c733c8/src/hardwire.cr#L207" target="_blank">View source</a>]
+          [<a href="https://github.com/rwnx/hardwire/blob/a74778fe74e33ed5a023168f3d5ba75fe4fdb5f0/src/hardwire.cr#L316" target="_blank">View source</a>]
         
       </div>
     </div>
   
-    <div class="entry-detail" id="transient(path,tags=nil,&amp;block)-macro">
+    <div class="entry-detail" id="transient(path,tag=nil,&amp;block)-macro">
       <div class="signature">
         
-        macro <strong>transient</strong>(path, tags = <span class="n">nil</span>, &block)
+        macro <strong>transient</strong>(path, tag = <span class="n">nil</span>, &block)
 
-        <a class="method-permalink" href="#transient(path,tags=nil,&block)-macro">#</a>
+        <a class="method-permalink" href="#transient%28path%2Ctag%3Dnil%2C%26block%29-macro">#</a>
       </div>
       
         <div class="doc">
@@ -414,7 +527,7 @@ directly resolving the <code>resolve!</code> method. If you need safety - use <c
       <br/>
       <div>
         
-          [<a href="https://github.com/jerometwell/hardwire/blob/28c75f18f20967daaf929a092dfdcf0092c733c8/src/hardwire.cr#L207" target="_blank">View source</a>]
+          [<a href="https://github.com/rwnx/hardwire/blob/a74778fe74e33ed5a023168f3d5ba75fe4fdb5f0/src/hardwire.cr#L316" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -424,7 +537,7 @@ directly resolving the <code>resolve!</code> method. If you need safety - use <c
         
         macro <strong>transient</strong>(path, &block)
 
-        <a class="method-permalink" href="#transient(path,&block)-macro">#</a>
+        <a class="method-permalink" href="#transient%28path%2C%26block%29-macro">#</a>
       </div>
       
         <div class="doc">
@@ -435,7 +548,7 @@ directly resolving the <code>resolve!</code> method. If you need safety - use <c
       <br/>
       <div>
         
-          [<a href="https://github.com/jerometwell/hardwire/blob/28c75f18f20967daaf929a092dfdcf0092c733c8/src/hardwire.cr#L207" target="_blank">View source</a>]
+          [<a href="https://github.com/rwnx/hardwire/blob/a74778fe74e33ed5a023168f3d5ba75fe4fdb5f0/src/hardwire.cr#L316" target="_blank">View source</a>]
         
       </div>
     </div>

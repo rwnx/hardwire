@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="generator" content="Crystal Docs 0.36.1">
+<meta name="generator" content="Crystal Docs 1.2.2">
 <meta name="crystal_docs.project_version" content="HEAD">
 <meta name="crystal_docs.project_name" content="hardwire">
 
@@ -71,6 +71,11 @@
       
         <ul>
   
+  <li class=" " data-id="hardwire/HardWire/Root/Scope" data-name="hardwire::root::scope">
+      <a href="../HardWire/Root/Scope.html">Scope</a>
+      
+    </li>
+  
   <li class=" " data-id="hardwire/HardWire/Root/Tags" data-name="hardwire::root::tags">
       <a href="../HardWire/Root/Tags.html">Tags</a>
       
@@ -119,9 +124,7 @@
 
   <p>Attach this annotation to a #initialize function to indicate which tags this method needs to resolve
 for each dependency.</p>
-
 <p>This annotation takes a key-value set of arguments matching argument names to tags.</p>
-
 <pre><code class="language-crystal"><span class="c"># resolve the db_service with tag &quot;secondary&quot;</span>
 @[<span class="t">HardWire</span><span class="t">::</span><span class="t">Tags</span>(db_service: <span class="s">&quot;secondary&quot;</span>)]
 <span class="k">def</span> <span class="m">initialize</span>(db_service : <span class="t">DbService</span>)</code></pre>
@@ -149,7 +152,7 @@ for each dependency.</p>
   </h2>
   
     
-      <a href="https://github.com/jerometwell/hardwire/blob/28c75f18f20967daaf929a092dfdcf0092c733c8/src/hardwire.cr#L15" target="_blank">
+      <a href="https://github.com/rwnx/hardwire/blob/a74778fe74e33ed5a023168f3d5ba75fe4fdb5f0/src/hardwire.cr#L16" target="_blank">
         hardwire.cr
       </a>
     
