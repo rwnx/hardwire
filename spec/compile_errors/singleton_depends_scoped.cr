@@ -1,12 +1,14 @@
 require "../../src/hardwire"
 
 class Singleton; end
+
 class Scoped; end
+
 class Transient; end
 
 class DependsScoped
-    def initialize(@dependency : Scoped)
-    end
+  def initialize(@dependency : Scoped)
+  end
 end
 
 class Container
@@ -17,4 +19,3 @@ class Container
 end
 
 instance = Container.resolve DependsScoped
-
