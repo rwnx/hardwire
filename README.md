@@ -135,8 +135,12 @@ end
 get "/" do
   # create a unique scope
   scope = Container.scope
+
+  logger = scope.resolve ScopedLogging
   db = scope.resolve DatabaseConnection
   db.get_some_data
+
+  logger.log("I share a logger with the database in scope!")
 end
 
 Kemal.run
