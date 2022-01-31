@@ -1,7 +1,9 @@
 require "./spec_helper"
 
 class Singleton; end
+
 class Scoped; end
+
 class Transient; end
 
 class ScopedNeedsSingleton
@@ -29,20 +31,19 @@ class Container
   scoped ScopedNeedsScoped
 end
 
-
 describe "Scopes" do
   it "should resolve different instances in different scopes" do
     scope_1 = Container.scope
     scope_2 = Container.scope
     instance_1 = scope_1.resolve ScopedNeedsSingleton
     instance_2 = scope_2.resolve ScopedNeedsSingleton
-    
+
     instance_1.should_not be instance_2
   end
 
   it "should propagate scope resolution in nested depedencies" do
     scope = Container.scope
-    
+
     nested_dependency = scope.resolve Scoped
     instance = scope.resolve ScopedNeedsScoped
 
@@ -75,16 +76,14 @@ describe "Scopes" do
     container_transient.should_not be scope_transient
   end
 
-
   it "creating a lifecycle scope with the same name as an already initialized scope should fail" do
     expect_raises(Exception) do
       scope1 = Container.scope "test_scope"
       scope1.resolve Scoped
-      
+
       scope2 = Container.scope "test_scope"
     end
   end
-
 
   it "attempting to init a scope with a reserved name should fail" do
     expect_raises(Exception) do
@@ -100,7 +99,7 @@ describe "Scopes" do
 
     resolved_second = scope.resolve Scoped
 
-    resolved_first.should_not be resolved_second    
+    resolved_first.should_not be resolved_second
   end
 
   it "after destroying a scope, singletons should be the same instance" do
@@ -111,12 +110,11 @@ describe "Scopes" do
 
     resolved_second = scope.resolve Singleton
 
-    resolved_first.should be resolved_second    
+    resolved_first.should be resolved_second
   end
-
 
   it "destroying a scope that was never used should have no effect" do
     scope = Container.scope
-    scope.destroy  
+    scope.destroy
   end
 end

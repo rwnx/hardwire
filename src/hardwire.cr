@@ -1,4 +1,5 @@
 require "uuid"
+
 # A Compile-time non-intrusive dependency injection system for Crystal.
 module HardWire
   # :nodoc:
@@ -68,14 +69,14 @@ module HardWire
       macro scope(name)
         {{@type}}::Scope.new(\{{name}})
       end
-      
+
       # Create a new scope with a randomly chosen unique ID
       macro scope()
         {{@type}}::Scope.new(UUID.random.to_s)
       end
 
       # A Scope is an object that represents the a scope's lifecycle
-      # 
+      #
       # It is a a helper class for accessing scoped resolution
       # and providing a lifecycle hook to destroy/garbage collect the scoped instances
       #
@@ -180,23 +181,23 @@ module HardWire
         {% register_tag = tag.strip.downcase %}
         {% register_type = path.resolve %}
         {% register_type_safe = register_type.stringify.gsub(/[^\w]/, "_") %}
-        
+
 
         {% if flag? :debug %}
-          {% puts "% Registering: #{lifecycle} #{register_type}[#{register_tag.id}]"%}
+          {% puts "% Registering: #{lifecycle} #{register_type}[#{register_tag.id}]" %}
         {% end %}
 
         {% if ![:singleton, :scoped, :transient].includes? lifecycle %}
           {% raise "Unknown Lifecycle #{lifecycle}" %}
         {% end %}
 
-        {% if REGISTRATIONS.any? {|x| x[:type] == register_type.stringify && x[:tag] == register_tag } %}
+        {% if REGISTRATIONS.any? { |x| x[:type] == register_type.stringify && x[:tag] == register_tag } %}
           {% raise "HardWire/DuplicateRegistration: existing #{register_type}[#{register_tag.id}]" %}
         {% end %}
-        
+
         # Define a resolve! method that instantiates the dependency that's being registered,
         # either through the block provided or introspection on the constructor.
-        {% if REGISTRATIONS.any? {|x| x[:type] == register_type.stringify } %}
+        {% if REGISTRATIONS.any? { |x| x[:type] == register_type.stringify } %}
           {% if flag? :debug %}
             {% puts "% skipping resolve definition for (#{lifecycle}): #{register_type}, already present" %}
           {% end %}
@@ -223,8 +224,8 @@ module HardWire
                 return @@instances_{{register_type_safe.id}}[scope][tag]
               end
             end
-          
-            tempvar : {{register_type.id}} = 
+
+            tempvar : {{register_type.id}} =
             {% if block %}
               ({{block.body}})
             {% else %}
@@ -254,11 +255,11 @@ module HardWire
                       {% end %}
                     {% end %}
 
-                    {% if !REGISTRATIONS.any? {|x| x[:type] == dependency_type.name.stringify && x[:tag] == dependency_tag } %}
+                    {% if !REGISTRATIONS.any? { |x| x[:type] == dependency_type.name.stringify && x[:tag] == dependency_tag } %}
                       {% raise "HardWire/MissingDependency: unabled to register #{register_type.id}, missing dependency #{arg.name}: #{dependency_type}[#{dependency_tag.id}]" %}
                     {% end %}
 
-                    {% if [:transient, :singleton].includes?(lifecycle) && REGISTRATIONS.any? {|x| x[:type] == dependency_type.name.stringify && x[:tag] == dependency_tag && x[:lifecycle] == :scoped} %}
+                    {% if [:transient, :singleton].includes?(lifecycle) && REGISTRATIONS.any? { |x| x[:type] == dependency_type.name.stringify && x[:tag] == dependency_tag && x[:lifecycle] == :scoped } %}
                       {% raise "HardWire/DependsOnScoped: unabled to register #{register_type.id}, cross-scoped dependency #{arg.name}: #{dependency_type}[#{dependency_tag.id}]" %}
                     {% end %}
 
@@ -284,7 +285,7 @@ module HardWire
           end
         {% end %}
         {% REGISTRATIONS << {type: register_type.stringify, tag: register_tag, lifecycle: lifecycle} %}
-        
+
         # Interrogate the container to determine whether a scope has been initialized
         # NOTE: this only works if something has been resolved in scope before this method is called
         def self.has_scope?(scope_name) : Bool
