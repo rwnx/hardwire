@@ -49,12 +49,6 @@ module HardWire
       # Users can also run their own checks at runtime for length, structure, etc.
       REGISTRATIONS = [] of NamedTuple(type: String, tag: String, lifecycle: Symbol)
 
-      # The Tags module contains all registered tags as classes.
-      #
-      # These generated tags allow us to resolve constructors using static type information.
-      module Tags
-      end
-
       # Interrogate the container for a registration
       def self.registered?(target : Class, tag = "default") : Bool
         return REGISTRATIONS.any? {|x| x[:type] == target.name && x[:tag] == tag }
@@ -80,8 +74,15 @@ module HardWire
         {{@type}}::Scope.new(UUID.random.to_s)
       end
 
-      # A Scope is an object that represents the a scope's lifecycle, as a helper class for accessing scoped resolution
-      # and also providing a lifecycle hook to destroy/garbage collect the scoped instances
+      # A Scope is an object that represents the a scope's lifecycle
+      # 
+      # It is a a helper class for accessing scoped resolution
+      # and providing a lifecycle hook to destroy/garbage collect the scoped instances
+      #
+      # Scopes work in exactly the same way that singleton lifecycles do, except that the user has control
+      # over when the instances stored inside are released for garbage collection.
+      #
+      # NOTE: you should not construct these directly, instead prefering to use the `.scope` macro on the container module
       class Scope
         def initialize(@name : String)
           if @name == "singleton"
@@ -99,6 +100,7 @@ module HardWire
         end
 
         # Destroy the represented scope and release the instances for garbage collection
+        #
         # NOTE: this will be called when the scope itself is garbage-collected
         def destroy
           {{@type}}.destroy_scope @name
