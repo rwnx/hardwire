@@ -1,3 +1,4 @@
+require "uuid"
 # A Compile-time non-intrusive dependency injection system for Crystal.
 module HardWire
   # :nodoc:
@@ -46,7 +47,7 @@ module HardWire
       # Store all registrations, which are mainly used to give nice errors for duplicate registrations
       #
       # Users can also run their own checks at runtime for length, structure, etc.
-      REGISTRATIONS = [] of Tuple(String, String)
+      REGISTRATIONS = [] of NamedTuple(type: String, tag: String, lifecycle: Symbol)
 
       # The Tags module contains all registered tags as classes.
       #
@@ -56,7 +57,7 @@ module HardWire
 
       # Interrogate the container for a registration
       def self.registered?(target : Class, tag = "default") : Bool
-        return REGISTRATIONS.includes?({target.name, tag.strip.downcase})
+        return REGISTRATIONS.any? {|x| x[:type] == target.name && x[:tag] == tag }
       end
 
       # Resolve a dependency from a class and a string tag
@@ -66,17 +67,59 @@ module HardWire
       # NOTE: This method does not protect you from unregistered dependencies, since it relies on
       # directly resolving the `resolve!` method. If you need safety - use `registered?`
       macro resolve(target, tag = "default")
-        {{@type}}.resolve!(\{{target}}, {{@type}}::Tags::\{{tag.upcase.id}} )
+        {{@type}}.resolve!(\{{target}}, \{{tag}})
+      end
+
+      # create a new scope with the specified name
+      macro scope(name)
+        {{@type}}::Scope.new(\{{name}})
+      end
+      
+      # Create a new scope with a randomly chosen unique ID
+      macro scope()
+        {{@type}}::Scope.new(UUID.random.to_s)
+      end
+
+      # A Scope is an object that represents the a scope's lifecycle, as a helper class for accessing scoped resolution
+      # and also providing a lifecycle hook to destroy/garbage collect the scoped instances
+      class Scope
+        def initialize(@name : String)
+          if @name == "singleton"
+            raise "Hardwire/ReservedScope: the scope 'singleton' is used internally, please choose a different name"
+          end
+
+          if {{@type}}.has_scope? @name
+            raise "Hardwire/ExistingScope: the scope #{@name} already exists"
+          end
+        end
+
+        # Resolve a dependency from the represented scope
+        def resolve(target : Class, tag = "default")
+          {{@type}}.resolve!(target, tag, scope: @name)
+        end
+
+        # Destroy the represented scope and release the instances for garbage collection
+        # NOTE: this will be called when the scope itself is garbage-collected
+        def destroy
+          {{@type}}.destroy_scope @name
+        end
+
+        def finalize
+          # Invoked when Foo is garbage-collected
+          self.destroy
+        end
+
+        getter name
       end
 
       {% verbatim do %}
 
       # Register a transient dependency.
-      macro transient(path, tags = nil, &block)
+      macro transient(path, tag = nil, &block)
         {% if block %}
-          register {{path}}, :transient, {{tags}} {{block}}
+          register {{path}}, :transient, {{tag}} {{block}}
         {% else %}
-          register {{path}}, :transient, {{tags}}
+          register {{path}}, :transient, {{tag}}
         {% end %}
       end
 
@@ -86,16 +129,30 @@ module HardWire
       end
 
       # Register a singleton dependency.
-      macro singleton(path, tags = nil, &block)
+      macro singleton(path, tag = nil, &block)
         {% if block %}
-          register {{path}}, :singleton, {{tags}} {{block}}
+          register {{path}}, :singleton, {{tag}} {{block}}
         {% else %}
-          register {{path}}, :singleton, {{tags}}
+          register {{path}}, :singleton, {{tag}}
         {% end %}
       end
 
       # Register a singleton dependency.
       macro singleton(path, &block)
+          singleton({{path}}) {{block}}
+      end
+
+      # Register a scoped dependency.
+      macro scoped(path, tag = nil, &block)
+        {% if block %}
+          register {{path}}, :scoped, {{tag}} {{block}}
+        {% else %}
+          register {{path}}, :scoped, {{tag}}
+        {% end %}
+      end
+
+      # Register a singleton dependency.
+      macro scoped(path, &block)
           singleton({{path}}) {{block}}
       end
 
@@ -113,86 +170,138 @@ module HardWire
       # There are also some checks that get carried out in the registration to catch errors up front
       # * We keep a class const, `REGISTRATIONS`, which contains a stringified version of this dependency.
       #   This is used for making sure things have been registered/not registered twice.
-      # * Tags are converted into classes, so that they can be passed around at compile time.
-      #   This means you'll get missing const errors when you fail to register properly, but it should be clear why.
-      private macro register(path, lifecycle = :singleton, tag = nil, &block )
-        {% raise "Hardwire/Reserved Tag: `default`. This is used internally - please choose a different name!" if tag == "default" %}
+      private macro register(path, lifecycle, tag = nil, &block)
+        {% raise "Hardwire/ReservedTag: `default`. This is used internally - please choose a different name!" if tag == "default" %}
         {% tag = "default" if tag == nil %}
-        {% raise "Hardwire/Invalid Tag Characters. #{tag}. Please use \\w+ patterns only" if tag =~ /[^\w]/ %}
+        {% raise "Hardwire/InvalidTagCharacters. #{tag}. Please use \\w+ patterns only" if tag =~ /[^\w]/ %}
 
         {% register_tag = tag.strip.downcase %}
         {% register_type = path.resolve %}
         {% register_type_safe = register_type.stringify.gsub(/[^\w]/, "_") %}
-        {% register_tag_type = "Tags::#{register_tag.upcase.id}" %}
+        
 
-        {% if ![:singleton, :transient].includes? lifecycle %}
+        {% if flag? :debug %}
+          {% puts "% Registering: #{lifecycle} #{register_type}[#{register_tag.id}]"%}
+        {% end %}
+
+        {% if ![:singleton, :scoped, :transient].includes? lifecycle %}
           {% raise "Unknown Lifecycle #{lifecycle}" %}
         {% end %}
 
-        {% if REGISTRATIONS.includes?({register_type.stringify, register_tag}) %}
-          {% raise "HardWire/Duplicate Registration: existing (#{register_type.id}, #{register_tag})." %}
+        {% if REGISTRATIONS.any? {|x| x[:type] == register_type.stringify && x[:tag] == register_tag } %}
+          {% raise "HardWire/DuplicateRegistration: existing #{register_type}[#{register_tag.id}]" %}
         {% end %}
-
-        # Declare a tag as a namespaced class: Tags::TAGNAME
-        class {{register_tag_type.id}}; end
-
-        # Pre-declare singleton classvar if required (ambiguous block return types require this)
-        {% if lifecycle == :singleton %}
-          @@{{register_type_safe.id}}_{{register_tag.id}} : {{register_type.id}}?
-        {% end %}
-
+        
         # Define a resolve! method that instantiates the dependency that's being registered,
         # either through the block provided or introspection on the constructor.
-        def self.resolve!( type : {{register_type.class}}, {{register_tag.id}} : {{register_tag_type.id}}.class ) : {{register_type.id}}
-          # Singletons: memoize to class var
-          {% if lifecycle == :singleton %}
-            @@{{register_type_safe.id}}_{{register_tag.id}} ||=
+        {% if REGISTRATIONS.any? {|x| x[:type] == register_type.stringify } %}
+          {% if flag? :debug %}
+            {% puts "% skipping resolve definition for (#{lifecycle}): #{register_type}, already present" %}
           {% end %}
+        {% else %}
 
-          {% if block %}
-            ({{block.body}})
-          {% else %}
-            {{register_type.id}}.new(
-              {% found_ctors = register_type.methods.select(&.name.==("initialize")) %}
-              # If multiple constructors are found, we want the annotated one
-              {% if found_ctors.size > 1 %}
-                {% annotated_ctors = found_ctors.select(&.annotation(::HardWire::Inject)) %}
-                {% raise "HardWire/Too Many Constructors: target: #{path}. Only one constructor can be annotated with @[HardWire::Inject]." if annotated_ctors.size > 1 %}
-                {% raise "HardWire/Unknown Constructor: target: #{path}. Annotate your injectable constructor with @[HardWire::Inject]" if annotated_ctors.size < 1 %}
-                {% constructor = annotated_ctors.first %}
-              {% else %}
-                {% constructor = found_ctors.first %}
-              {% end %}
+          # Pre-declare lifecycle classvar if required (ambiguous block return types require this)
+          # Required declarative for cross-scopes as well
+          @@instances_{{register_type_safe.id}} = Hash(String, Hash(String, {{register_type.id}})).new
 
-              {% if constructor != nil %}
-                {% for arg in constructor.args %}
-                  {% dependency_name = arg.name.id %}
-                  {% dependency_type = arg.restriction.resolve %}
-                  {% dependency_tag = "default" %}
+          def self.resolve!( type : {{register_type.class}}, tag : String, scope : String = "singleton") : {{register_type.id}}
+            # Do not propagate scope resolution if dependency was registered as a singleton
+            singleton_reg = REGISTRATIONS.any? {|x| x[:type] == type.name && x[:tag] == tag && x[:lifecycle] == :singleton  }
+            if singleton_reg
+              scope = "singleton"
+            end
+            scoped_reg = REGISTRATIONS.any? {|x| x[:type] == type.name && x[:tag] == tag && x[:lifecycle] == :scoped }
+            lifecycle_required = singleton_reg || scoped_reg
 
-                  {% if tagannotation = constructor.annotation(::HardWire::Tags) %}
-                    {% for name, annotation_tag in tagannotation.named_args %}
-                      {% if name == dependency_name %}
-                        {% dependency_tag = annotation_tag.strip.downcase %}
+            {% if flag? :debug %}
+              puts "% Resolving: #{type}: [#{tag}]"
+            {% end %}
+            if lifecycle_required
+              if @@instances_{{register_type_safe.id}}.dig? scope, tag
+                return @@instances_{{register_type_safe.id}}[scope][tag]
+              end
+            end
+          
+            tempvar : {{register_type.id}} = 
+            {% if block %}
+              ({{block.body}})
+            {% else %}
+              {{register_type.id}}.new(
+                {% found_ctors = register_type.methods.select(&.name.==("initialize")) %}
+                # If multiple constructors are found, we want the annotated one
+                {% if found_ctors.size > 1 %}
+                  {% annotated_ctors = found_ctors.select(&.annotation(::HardWire::Inject)) %}
+                  {% raise "HardWire/TooManyConstructors: target: #{path}. Only one constructor can be annotated with @[HardWire::Inject]." if annotated_ctors.size > 1 %}
+                  {% raise "HardWire/UnknownConstructor: target: #{path}. Annotate your injectable constructor with @[HardWire::Inject]" if annotated_ctors.size < 1 %}
+                  {% constructor = annotated_ctors.first %}
+                {% else %}
+                  {% constructor = found_ctors.first %}
+                {% end %}
+
+                {% if constructor != nil %}
+                  {% for arg in constructor.args %}
+                    {% dependency_name = arg.name.id %}
+                    {% dependency_type = arg.restriction.resolve %}
+                    {% dependency_tag = "default" %}
+
+                    {% if tagannotation = constructor.annotation(::HardWire::Tags) %}
+                      {% for name, annotation_tag in tagannotation.named_args %}
+                        {% if name == dependency_name %}
+                          {% dependency_tag = annotation_tag.strip.downcase %}
+                        {% end %}
                       {% end %}
                     {% end %}
-                  {% end %}
 
-                  {% if !REGISTRATIONS.includes?({dependency_type.name.stringify, dependency_tag}) %}
-                    {% raise "HardWire/Missing Dependency: unabled to register (#{register_type.id}, #{register_tag}), missing #{arg.name}: (#{dependency_type}, #{dependency_tag})" %}
-                  {% end %}
+                    {% if !REGISTRATIONS.any? {|x| x[:type] == dependency_type.name.stringify && x[:tag] == dependency_tag } %}
+                      {% raise "HardWire/MissingDependency: unabled to register #{register_type.id}, missing dependency #{arg.name}: #{dependency_type}[#{dependency_tag.id}]" %}
+                    {% end %}
 
-                  {{dependency_name}}: self.resolve!(
-                    type: {{dependency_type}},
-                    {{dependency_tag}}: Tags::{{dependency_tag.upcase.id}}
-                  ),
+                    {% if [:transient, :singleton].includes?(lifecycle) && REGISTRATIONS.any? {|x| x[:type] == dependency_type.name.stringify && x[:tag] == dependency_tag && x[:lifecycle] == :scoped} %}
+                      {% raise "HardWire/DependsOnScoped: unabled to register #{register_type.id}, cross-scoped dependency #{arg.name}: #{dependency_type}[#{dependency_tag.id}]" %}
+                    {% end %}
+
+                    {% if flag? :debug %}
+                      {% puts "% NestedDependency: #{arg.name}: #{dependency_type}[#{dependency_tag.id}]" %}
+                    {% end %}
+                    {{dependency_name}}: self.resolve!(
+                      type: {{dependency_type}},
+                      tag: {{dependency_tag}},
+                      scope: scope
+                    ),
+                  {% end %}
                 {% end %}
-              {% end %}
-            )
+              )
+            {% end %}
+
+            if lifecycle_required
+              @@instances_{{register_type_safe.id}}[scope] ||= Hash(String, {{register_type.id}}).new
+              @@instances_{{register_type_safe.id}}[scope][tag] = tempvar
+            end
+
+            return tempvar
+          end
+        {% end %}
+        {% REGISTRATIONS << {type: register_type.stringify, tag: register_tag, lifecycle: lifecycle} %}
+        
+        # Interrogate the container to determine whether a scope has been initialized
+        # NOTE: this only works if something has been resolved in scope before this method is called
+        def self.has_scope?(scope_name) : Bool
+          {% for registration in REGISTRATIONS %}
+            {% registration_type_safe = registration[:type].gsub(/[^\w]/, "_") %}
+            if @@instances_{{registration_type_safe.id}}.has_key? scope_name
+              return true
+            end
           {% end %}
+          return false
         end
 
-        {% REGISTRATIONS << {register_type.stringify, register_tag} %}
+        # Destroy a scope's instances, leaving it able to be garbage collected
+        def self.destroy_scope(scope_name)
+          {% for registration in REGISTRATIONS %}
+            {% registration_type_safe = registration[:type].gsub(/[^\w]/, "_") %}
+            @@instances_{{registration_type_safe.id}}.delete scope_name
+          {% end %}
+        end
       end
 
       {% end %}
