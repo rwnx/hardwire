@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
   -------------------------------------------------------------------
 ## [Unreleased]
+
+## [1.1.0] 2022-01-31
 - Added compile-time logging for :debug builds
 - Added support for scoped resolution
 - Changed Tag resolution from a compile-time concern to a runtime one.
