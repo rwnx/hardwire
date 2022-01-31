@@ -21,6 +21,6 @@ jobs:
       run: crystal spec
     - name: Run Lint
       run: |
-        bin/ameba
+        bin/ameba src
         crystal tool format --check
 
