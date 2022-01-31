@@ -76,11 +76,6 @@
       
     </li>
   
-  <li class=" " data-id="hardwire/HardWire/Root/Tags" data-name="hardwire::root::tags">
-      <a href="../../HardWire/Root/Tags.html">Tags</a>
-      
-    </li>
-  
 </ul>
 
       
@@ -124,8 +119,12 @@
     Overview
   </h2>
 
-  <p>A Scope is an object that represents the a scope's lifecycle, as a helper class for accessing scoped resolution
-and also providing a lifecycle hook to destroy/garbage collect the scoped instances</p>
+  <p>A Scope is an object that represents the a scope's lifecycle</p>
+<p>It is a a helper class for accessing scoped resolution
+and providing a lifecycle hook to destroy/garbage collect the scoped instances</p>
+<p>Scopes work in exactly the same way that singleton lifecycles do, except that the user has control
+over when the instances stored inside are released for garbage collection.</p>
+<p><span class="flag purple">NOTE</span>  you should not construct these directly, instead prefering to use the <code>.scope</code> macro on the container module</p>
 
 
 
@@ -150,7 +149,7 @@ and also providing a lifecycle hook to destroy/garbage collect the scoped instan
   </h2>
   
     
-      <a href="https://github.com/rwnx/hardwire/blob/a74778fe74e33ed5a023168f3d5ba75fe4fdb5f0/src/hardwire.cr#L316" target="_blank">
+      <a href="https://github.com/rwnx/hardwire/blob/5803768fdbee41b7b80b4ca1bfca8b4ff2eeb7ae/src/hardwire.cr#L319" target="_blank">
         hardwire.cr
       </a>
     
@@ -195,7 +194,7 @@ and also providing a lifecycle hook to destroy/garbage collect the scoped instan
       <li class="entry-summary">
         <a href="#destroy-instance-method" class="signature"><strong>#destroy</strong></a>
         
-          <div class="summary"><p>Destroy the represented scope and release the instances for garbage collection NOTE: this will be called when the scope itself is garbage-collected</p></div>
+          <div class="summary"><p>Destroy the represented scope and release the instances for garbage collection</p></div>
         
       </li>
     
@@ -267,7 +266,7 @@ and also providing a lifecycle hook to destroy/garbage collect the scoped instan
       <br/>
       <div>
         
-          [<a href="https://github.com/rwnx/hardwire/blob/a74778fe74e33ed5a023168f3d5ba75fe4fdb5f0/src/hardwire.cr#L316" target="_blank">View source</a>]
+          [<a href="https://github.com/rwnx/hardwire/blob/5803768fdbee41b7b80b4ca1bfca8b4ff2eeb7ae/src/hardwire.cr#L319" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -303,7 +302,7 @@ and also providing a lifecycle hook to destroy/garbage collect the scoped instan
       <br/>
       <div>
         
-          [<a href="https://github.com/rwnx/hardwire/blob/a74778fe74e33ed5a023168f3d5ba75fe4fdb5f0/src/hardwire.cr#L316" target="_blank">View source</a>]
+          [<a href="https://github.com/rwnx/hardwire/blob/5803768fdbee41b7b80b4ca1bfca8b4ff2eeb7ae/src/hardwire.cr#L319" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -319,7 +318,7 @@ and also providing a lifecycle hook to destroy/garbage collect the scoped instan
       <br/>
       <div>
         
-          [<a href="https://github.com/rwnx/hardwire/blob/a74778fe74e33ed5a023168f3d5ba75fe4fdb5f0/src/hardwire.cr#L316" target="_blank">View source</a>]
+          [<a href="https://github.com/rwnx/hardwire/blob/5803768fdbee41b7b80b4ca1bfca8b4ff2eeb7ae/src/hardwire.cr#L319" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -354,7 +353,7 @@ and also providing a lifecycle hook to destroy/garbage collect the scoped instan
       <br/>
       <div>
         
-          [<a href="https://github.com/rwnx/hardwire/blob/a74778fe74e33ed5a023168f3d5ba75fe4fdb5f0/src/hardwire.cr#L316" target="_blank">View source</a>]
+          [<a href="https://github.com/rwnx/hardwire/blob/5803768fdbee41b7b80b4ca1bfca8b4ff2eeb7ae/src/hardwire.cr#L319" target="_blank">View source</a>]
         
       </div>
     </div>
