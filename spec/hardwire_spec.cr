@@ -145,4 +145,3 @@ describe HardWire do
     end
   end
 end
-
