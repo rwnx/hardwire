@@ -1,5 +1,5 @@
 name: hardwire
-version: 1.1.0
+version: 1.1.1
 
 development_dependencies:
   ameba:
@@ -12,7 +12,7 @@ targets:
     main: src/hardwire.cr
 
 authors:
-  - Rowan Twell <jtwell1@gmail.com>
+  - Rowan Twell <rowantwell@gmail.com>
 
 crystal: 1.0.0
 
